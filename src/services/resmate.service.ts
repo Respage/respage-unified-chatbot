@@ -121,6 +121,17 @@ export class ResmateService {
         return response.data.data;
     }
 
+    async updateConversation(service_id: string, update: any) {
+        const response = await axios({
+            method: "PUT",
+            url: `${process.env.RESMATE_API_URL}/private/conversation?service_id=${service_id}`,
+            data: update,
+            headers: this.headers
+        });
+
+        return response.data.data;
+    }
+
     async scheduleTour(conversation: Conversation) {
         const {
             move_in_date,

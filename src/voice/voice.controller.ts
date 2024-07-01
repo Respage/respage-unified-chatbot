@@ -1,15 +1,24 @@
 import {Request} from 'express';
-import {Controller, Get, Req} from '@nestjs/common';
+import {Controller, Get, Post, Req} from '@nestjs/common';
 import {VONAGE_GATEWAY_PATH} from "./gateways/vonage.gateway";
 import {OpenAiService} from "../services/open-ai.service";
+import {uploadRecording} from "../services/aws.service";
+import {VonageService} from "./services/vonage/vonage.service";
+import {ResmateService} from "../services/resmate.service";
 
 @Controller('voice')
 export class VoiceController {
-    constructor(private openAiService: OpenAiService) {}
+    constructor(private openAiService: OpenAiService,
+                private vonageService: VonageService,
+                private resmateService: ResmateService) {}
 
     @Get('/answer')
     answer(@Req() req: Request): any {
         return [
+            {
+                action: "record",
+                eventUrl: [`${process.env.SERVER_URL}/voice/recording`]
+            },
             {
                 action: "connect",
                 endpoint: [
@@ -46,5 +55,18 @@ export class VoiceController {
     @Get('/text-embedding')
     getEmbedding(@Req() req: Request) {
         return this.openAiService.getTextEmbedding(req.query.text);
+    }
+
+    @Post('/recording')
+    async recording(@Req() req: Request) {
+        try {
+            const { filename, file } = await this.vonageService.getConversationAudioFile(req.body.recording_url);
+
+            const recording_url = await uploadRecording(filename, file);
+            await this.resmateService.updateConversation(req.body.conversation_uuid, { recording_url });
+
+        } catch (e) {
+            console.error(e);
+        }
     }
 }

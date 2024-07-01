@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { Auth } from '@vonage/auth';
 import {Vonage} from "@vonage/server-sdk";
+import axios, {AxiosRequestConfig} from "axios";
 
 @Injectable()
 export class VonageService {
@@ -18,5 +19,22 @@ export class VonageService {
         });
 
         this.vonage = new Vonage(this.credentials);
+    }
+
+    async getConversationAudioFile(recordingUrl: string): Promise<{filename: string, file: Buffer}> {
+        const options: AxiosRequestConfig = {
+            url: recordingUrl,
+            method: 'GET',
+            responseType: 'arraybuffer',
+            params: {
+                api_key: process.env.VONAGE_API_KEY,
+                api_secret: process.env.VONAGE_API_SECRET,
+            },
+        };
+
+        const result = await axios(options);
+        const filename = recordingUrl.split('/').pop() + '.mp3';
+
+        return {filename, file: Buffer.from(result.data)};
     }
 }
