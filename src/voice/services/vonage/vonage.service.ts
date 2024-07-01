@@ -33,7 +33,11 @@ export class VonageService {
         };
 
         const result = await axios(options);
-        const filename = recordingUrl.split('/').pop() + '.mp3';
+        let filename = recordingUrl.split('/').pop() + '.mp3';
+
+        if (filename.startsWith('/')) {
+            filename = filename.slice(1);
+        }
 
         return {filename, file: Buffer.from(result.data)};
     }
