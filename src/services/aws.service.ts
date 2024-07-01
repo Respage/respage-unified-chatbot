@@ -5,13 +5,13 @@ const s3 = new S3({
         accessKeyId: process.env.AWS_ACCESS_KEY_ID,
         secretAccessKey: process.env.AWS_S3_SECRET_ACCESS_KEY
     },
-    signatureVersion: 'v4',
+    signatureVersion: 's3v4',
     region: process.env.AWS_S3_REGION
 } as any);
 
 async function uploadRecording(filename: string, file: Buffer, mimeType = 'audio/mpeg')  {
     const params = {
-        ACL: 'public-read',
+        //ACL: 'public-read',
         Bucket: process.env.AWS_S3_RECORDING_BUCKET,
         Body: file,
         Key: filename,
