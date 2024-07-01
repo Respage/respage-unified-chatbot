@@ -179,7 +179,7 @@ export class OpenAiService {
                                             tourDateTime.toFormat('yyyy-LL-dd'),
                                             1
                                         );
-
+                                        console.log(tourTimes, tourDateTime.toISO());
                                         if (tourTimes.find(t => +DateTime.fromISO(t) === +tourDateTime)) {
                                             if (tourDateTimeConfirmed) {
                                                 console.log("TOUR SCHEDULED: ", tourDateTime.toISO());

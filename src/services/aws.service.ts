@@ -11,7 +11,7 @@ const s3 = new S3({
 
 async function uploadRecording(filename: string, file: Buffer, mimeType = 'audio/mpeg')  {
     const params = {
-        //ACL: 'public-read',
+        ACL: 'public-read',
         Bucket: process.env.AWS_S3_RECORDING_BUCKET,
         Body: file,
         Key: filename,
