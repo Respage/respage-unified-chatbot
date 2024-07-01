@@ -87,6 +87,7 @@ export class ResmateService {
     }
 
     async addConversation(conversation: Conversation) {
+        const callHistory = conversation.getCallHistory();
         const response = await axios({
             method: "POST",
             url: `${process.env.RESMATE_API_URL}/private/conversation/${conversation.campaign_id}/${conversation.conversationInfo.prospect._id}`,
@@ -94,7 +95,14 @@ export class ResmateService {
                 type: 'voice',
                 contact: {user_phone: conversation.conversationInfo.phone},
                 locale: 'en-US',
-                logs: conversation.getCallHistory().map(x => {
+                logs: [
+                    {
+                        from: 'user',
+                        direction: 'in',
+                        body: '[Call Initiated]',
+                        timestamp: callHistory[0].timestamp
+                    },
+                    ...callHistory.map(x => {
                     return {
                         from: x.role === 'assistant' ? 'bot' : 'user',
                         direction: x.role === 'assistant' ? 'out' : 'in',
@@ -102,6 +110,7 @@ export class ResmateService {
                         timestamp: x.timestamp
                     };
                 })
+                ]
             },
             headers: this.headers
         });
