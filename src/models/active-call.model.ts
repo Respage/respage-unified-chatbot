@@ -23,7 +23,7 @@ enum ActiveCallStreamState {
 }
 
 export class ActiveCall {
-    private id: string;
+    readonly id: string;
 
     private callSocket: WebSocket;
     private readonly onCloseCallbacks: Array<() => void>

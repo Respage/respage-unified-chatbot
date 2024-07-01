@@ -93,7 +93,7 @@ export class VoiceService {
                 user_info.move_in_date = ActiveCall.compileTourDateTime(null, user_info.move_in_day, user_info.move_in_month, user_info.move_in_year);
             }
 
-            const conversation = await this.resmateService.addConversation(call.conversation);
+            const conversation = await this.resmateService.addConversation(call);
 
             await this.resmateService.upsertProspect(
                 call.conversation.campaign_id,

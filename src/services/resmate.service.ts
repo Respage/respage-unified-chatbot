@@ -2,6 +2,7 @@ import axios from "axios";
 import {Injectable} from "@nestjs/common";
 import {DateTime} from "luxon";
 import {Conversation, ConversationInfo, PropertyInfo} from "../models/conversation.model";
+import {ActiveCall} from "../models/active-call.model";
 
 export interface UpsertProspectParams {
     _id: string,
@@ -86,15 +87,17 @@ export class ResmateService {
         return response.data.data;
     }
 
-    async addConversation(conversation: Conversation) {
-        const callHistory = conversation.getCallHistory();
+    async addConversation(call: ActiveCall) {
+        const callHistory = call.conversation.getCallHistory();
         const response = await axios({
             method: "POST",
-            url: `${process.env.RESMATE_API_URL}/private/conversation/${conversation.campaign_id}/${conversation.conversationInfo.prospect._id}`,
+            url: `${process.env.RESMATE_API_URL}/private/conversation/${call.conversation.campaign_id}/${call.conversation.conversationInfo.prospect._id}`,
             data: {
                 type: 'voice',
-                contact: {user_phone: conversation.conversationInfo.phone},
+                contact: {user_phone: call.conversation.conversationInfo.phone},
                 locale: 'en-US',
+                status: 'closed',
+                service_id: call.id,
                 logs: [
                     {
                         from: 'user',
