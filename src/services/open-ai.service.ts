@@ -168,11 +168,23 @@ export class OpenAiService {
                                         };
 
                                         if (params.move_in_month) {
-                                            conversationInfoUpdate.move_in_date = ActiveCall.compileTourDateTime(null, params.move_in_day, params.move_in_month, params.move_in_year);
+                                            conversationInfoUpdate.move_in_date = ActiveCall.compileTourDateTime(
+                                                call.conversation.propertyInfo.tour_availability.timezone,
+                                                null,
+                                                params.move_in_day,
+                                                params.move_in_month,
+                                                params.move_in_year
+                                            );
                                         }
 
                                         const tourDateTimeConfirmed = params.tour_confirmed;
-                                        let tourDateTime = ActiveCall.compileTourDateTime(params.time, params.day, params.month, params.year);
+                                        let tourDateTime = ActiveCall.compileTourDateTime(
+                                            call.conversation.propertyInfo.tour_availability.timezone,
+                                            params.time,
+                                            params.day,
+                                            params.month,
+                                            params.year
+                                        );
 
                                         const tourTimes = await original_this.resmateService.getTourTimes(
                                             call.conversation.campaign_id,

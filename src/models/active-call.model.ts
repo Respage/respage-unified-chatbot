@@ -61,12 +61,12 @@ export class ActiveCall {
         this.conversation = new Conversation(campaign_id);
     }
 
-    static compileTourDateTime(time: string, day: string, month: string, year?: string) {
+    static compileTourDateTime(timezone: string, time: string, day: string, month: string, year?: string) {
         if (!(time && day && month)) {
             return null;
         }
 
-        return DateTime.fromFormat(`${time || '00:00'} ${day || 1} ${month} ${year || DateTime.now().year}`, "HH:mm d MMMM yyyy")
+        return DateTime.fromFormat(`${time || '00:00'} ${day || 1} ${month} ${year || DateTime.now().year}`, "HH:mm d MMMM yyyy", {zone: timezone});
     }
 
     init(websocket: WebSocket, speechToText: Duplex, AI: Duplex, textToSpeech: Duplex, systemPrompData: { property: PropertyInfo, conversation: ConversationInfo }) {
