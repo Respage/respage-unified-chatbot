@@ -135,9 +135,11 @@ export class ResmateService {
         const { tour_length, timezone } = conversation.propertyInfo.tour_availability;
         const { schedule_tour_options } = conversation.propertyInfo;
 
+        const tourDateTimeUTC = tour_date_time.toUTC();
+
         const basicReservation = {
-            start_time: tour_date_time.toISO(),
-            end_time: tour_date_time.plus({minutes: tour_length}).toISO(),
+            start_time: tourDateTimeUTC.toUTC().toISO(),
+            end_time: tourDateTimeUTC.plus({minutes: tour_length}).toISO(),
             campaign_id: conversation.campaign_id,
             prospect_id: prospect._id,
             name: `${first_name ? first_name + " " : ''}${last_name || ''}`,
