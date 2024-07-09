@@ -125,7 +125,7 @@ export class ResmateService {
         const response = await axios({
             method: "PUT",
             url: `${process.env.RESMATE_API_URL}/private/conversation?service_id=${service_id}`,
-            data: update,
+            data: { update },
             headers: this.headers
         });
 

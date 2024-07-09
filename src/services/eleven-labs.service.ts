@@ -93,16 +93,18 @@ export class ElevenLabsService {
             data.previous_text = next_text;
         }
 
-        const response = await axios({
+        const config = {
             method: 'POST',
-            responseType: 'arraybuffer',
+            responseType: 'arraybuffer' as any,
             url: `${TEXT_TO_SPEECH_URL}`,
             headers: {
                 'Content-Type': 'application/json',
                 'xi-api-key': process.env.ELEVEN_LABS_API_KEY,
             },
             data
-        });
+        };
+
+        const response = await axios(config);
 
         return response.data;
     }
