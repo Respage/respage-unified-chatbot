@@ -1,7 +1,8 @@
-import { Injectable } from '@nestjs/common';
-import { Auth } from '@vonage/auth';
+import {Injectable} from '@nestjs/common';
+import {Auth} from '@vonage/auth';
 import {Vonage} from "@vonage/server-sdk";
 import axios, {AxiosRequestConfig} from "axios";
+import {ConnectEventType, NCCOActions} from "@vonage/voice";
 
 @Injectable()
 export class VonageService {
@@ -36,5 +37,24 @@ export class VonageService {
         let filename = recordingUrl.split('/').pop() + '.mp3';
 
         return {filename, file: Buffer.from(result.data)};
+    }
+
+    async forwardCall(conversation_uuid: string, fromNumber: string, forwardingNumber: string) {
+        return this.vonage.voice.transferCallWithNCCO(
+            conversation_uuid,
+            [{
+                action: NCCOActions.CONNECT,
+                eventType: ConnectEventType.SYNCHRONOUS,
+                eventUrl: [`${process.env.SERVER_URL}/voice/event`],
+                timeout: 45,
+                from: "1"+fromNumber,
+                endpoint: [
+                    {
+                        type: 'phone',
+                        number: "1"+forwardingNumber
+                    },
+                ],
+            }]
+        )
     }
 }

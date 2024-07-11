@@ -3,7 +3,7 @@ import {Controller, Get, Post, Req} from '@nestjs/common';
 import {VONAGE_GATEWAY_PATH} from "./gateways/vonage.gateway";
 import {OpenAiService} from "../services/open-ai.service";
 import {uploadRecording} from "../services/aws.service";
-import {VonageService} from "./services/vonage/vonage.service";
+import {VonageService} from "../services/vonage.service";
 import {ResmateService} from "../services/resmate.service";
 
 @Controller('voice')

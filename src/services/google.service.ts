@@ -2,7 +2,7 @@ import {forwardRef, Inject, Injectable} from '@nestjs/common';
 
 import {SpeechClient} from '@google-cloud/speech';
 import {Duplex, TransformCallback} from "stream";
-import {VoiceService} from "../voice/services/voice.service";
+import {VoiceService} from "./voice.service";
 import {ActiveCall, DONE_BUFFER} from "../models/active-call.model";
 import {TextToSpeechClient} from "@google-cloud/text-to-speech";
 import {google} from "@google-cloud/text-to-speech/build/protos/protos";

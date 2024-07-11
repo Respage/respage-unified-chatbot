@@ -6,7 +6,7 @@ if (!process.env.NODE_ENV) {
 
 import {forwardRef, Inject, Injectable} from '@nestjs/common';
 import {Duplex, Readable} from "stream";
-import {VoiceService} from "../voice/services/voice.service";
+import {VoiceService} from "./voice.service";
 import OpenAI from "openai";
 import {ActiveCall, DONE_BUFFER} from "../models/active-call.model";
 import {ChatCompletionCreateParamsNonStreaming} from "openai/src/resources/chat/completions";
@@ -17,6 +17,7 @@ import {ResmateService} from "./resmate.service";
 import {DateTime} from "luxon";
 import {ElevenLabsService} from "./eleven-labs.service";
 import {FUNCTIONS} from "../models/open-ai-functions.model";
+import {VonageService} from "./vonage.service";
 
 @Injectable()
 export class OpenAiService {
@@ -225,6 +226,16 @@ export class OpenAiService {
                                         }
 
                                         await original_this.speakPrompt(stream, call, prompt);
+                                    } break;
+                                    case "talk_to_human": {
+                                        if (call.canForwardCall()) {
+                                            await original_this.speakPrompt(stream, call, "[Tell the user you will forward them to someone at the property now.]")
+
+                                            call.forward()
+                                            break;
+                                        }
+
+                                        await original_this.speakPrompt(stream, call, "[Tell the user you will notify someone at the office and then offer to help them without something else.]")
                                     } break;
                                 }
                             }

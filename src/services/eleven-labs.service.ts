@@ -1,7 +1,7 @@
 import axios from 'axios';
 import {forwardRef, Inject, Injectable} from "@nestjs/common";
 import {Duplex} from "stream";
-import {VoiceService} from "../voice/services/voice.service";
+import {VoiceService} from "./voice.service";
 import {ActiveCall, DONE_BUFFER} from "../models/active-call.model";
 
 const MODEL = "eleven_turbo_v2";

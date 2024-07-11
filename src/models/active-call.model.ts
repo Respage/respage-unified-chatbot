@@ -1,9 +1,10 @@
 import {WebSocket} from "ws";
 import {Duplex, promises as nodeStreamPromises} from "stream";
-import {VoiceService} from "../voice/services/voice.service";
+import {VoiceService} from "../services/voice.service";
 import {ChatHistoryLog, Conversation, ConversationInfo, PropertyInfo} from "./conversation.model";
 import {DateTime} from "luxon";
-import {FUNC_SCHEDULE_TOUR} from "./open-ai-functions.model";
+import {FUNC_SCHEDULE_TOUR, FUNC_TALK_TO_HUMAN} from "./open-ai-functions.model";
+import {OpenAiService} from "../services/open-ai.service";
 const {pipeline} = nodeStreamPromises;
 
 const SAMPLE_SIZE = 320; // How many individual samples are in the sample?
@@ -35,6 +36,7 @@ export class ActiveCall {
     doStopAmbiant: boolean = false;
     playingTyping: number = -1
     doNotInterrupt: boolean = false;
+    doForwardCall: boolean = false;
 
     internalMessageIncoming: boolean = false;
 
@@ -69,11 +71,17 @@ export class ActiveCall {
         return DateTime.fromFormat(`${time || '00:00'} ${day || 1} ${month} ${year || DateTime.now().year}`, "HH:mm d MMMM yyyy", {zone: timezone});
     }
 
-    init(websocket: WebSocket, speechToText: Duplex, AI: Duplex, textToSpeech: Duplex, systemPrompData: { property: PropertyInfo, conversation: ConversationInfo }) {
+    init(websocket: WebSocket,
+         speechToText: Duplex, AI: Duplex,
+         textToSpeech: Duplex,
+         systemPrompData: { property: PropertyInfo, conversation: ConversationInfo },
+         openAiService: OpenAiService,
+         voiceService: VoiceService,
+    ) {
         const original_this = this;
 
         this.updateSystemPrompt(systemPrompData.property, systemPrompData.conversation);
-        this.conversation.functions = [FUNC_SCHEDULE_TOUR];
+        this.conversation.functions = [FUNC_SCHEDULE_TOUR, FUNC_TALK_TO_HUMAN];
 
         let streamStart = 0;
         let audioLength = 0;
@@ -83,11 +91,22 @@ export class ActiveCall {
             read() {},
             async write(chunk, encoding, callback) {
                 if (!chunk.compare(DONE_BUFFER)) {
-                    setTimeout(() => {
+                    setTimeout(async () => {
                         console.log("Done streaming audio out...");
                         notStreaming = true;
                         streamStart = 0;
                         audioLength = 0;
+
+                        if (original_this.doForwardCall) {
+                            original_this.doForwardCall = false;
+                            try {
+                                await voiceService.forwardCall(original_this);
+                            } catch (e) {
+                                console.error(e);
+                                await openAiService.speakPrompt(callStream, this, "[The call could not be forwarded. Apologize to the user and ask if they need anything else.]")
+                            }
+                            return;
+                        }
                         original_this.startListening();
                         // original_this.setStallTimeout();
                     }, audioLength - (Date.now() - streamStart));
@@ -322,6 +341,14 @@ export class ActiveCall {
 
     tourScheduled() {
         return this.conversation.conversationInfo?.tour_scheduled;
+    }
+
+    canForwardCall() {
+        return this.conversation.propertyInfo.call_forwarding_number;
+    }
+
+    forward() {
+        this.doForwardCall = true;
     }
 
     getFunctions() {

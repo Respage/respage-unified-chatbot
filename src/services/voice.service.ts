@@ -2,12 +2,13 @@ import { readFileSync } from 'fs';
 import { DateTime } from 'luxon';
 import {forwardRef, Inject, Injectable} from '@nestjs/common';
 import {WebSocket} from "ws";
-import {GoogleService} from "../../services/google.service";
-import {ElevenLabsService} from "../../services/eleven-labs.service";
-import {ActiveCall} from "../../models/active-call.model";
-import {OpenAiService} from "../../services/open-ai.service";
-import {RedisService} from "../../services/redis.service";
-import {ResmateService} from "../../services/resmate.service";
+import {GoogleService} from "./google.service";
+import {ElevenLabsService} from "./eleven-labs.service";
+import {ActiveCall} from "../models/active-call.model";
+import {OpenAiService} from "./open-ai.service";
+import {RedisService} from "./redis.service";
+import {ResmateService} from "./resmate.service";
+import {VonageService} from "./vonage.service";
 
 @Injectable()
 export class VoiceService {
@@ -27,7 +28,8 @@ export class VoiceService {
         @Inject(forwardRef(() => ElevenLabsService)) private elevenLabsService: ElevenLabsService,
         @Inject(forwardRef(() => OpenAiService)) private openAIService: OpenAiService,
         @Inject(forwardRef(() => RedisService)) private redisService: RedisService,
-        @Inject(forwardRef(() => ResmateService)) private resmateService: ResmateService
+        @Inject(forwardRef(() => ResmateService)) private resmateService: ResmateService,
+        @Inject(forwardRef(() => VonageService)) private vonageService: VonageService
     ) {}
 
     async startCall(id: string, from_number: string, to_number: string, callSocket: WebSocket) {
@@ -42,6 +44,8 @@ export class VoiceService {
         this.activeCalls[id] = call;
 
         const info = await this.redisService.getSystemPromptData(campaign_id);
+
+        info.call_forwarding_number = voiceInbox.call_forwarding_number;
 
         const tourTimeBuffer = info?.tour_availability?.closest_possible_tour_available_in_hours || 24;
 
@@ -83,7 +87,9 @@ export class VoiceService {
             {
                 property: info,
                 conversation: {phone: from_number}
-            }
+            },
+            this.openAIService,
+            this
         );
 
         call.onClose(async () => {
@@ -107,6 +113,10 @@ export class VoiceService {
 
 
         });
+    }
+
+    async forwardCall(call: ActiveCall) {
+        return this.vonageService.forwardCall(call.id, call.conversation.conversationInfo.phone, call.conversation.propertyInfo.call_forwarding_number);
     }
 
     getActiveCall(id: string) {

@@ -39,7 +39,13 @@ export const FUNC_COLLECT_USER_INFO = {
     }
 };
 
+export const FUNC_TALK_TO_HUMAN = {
+    name: "talk_to_human",
+    description: "Call if the user wishes to speak to a human representative.",
+};
+
 export const FUNCTIONS = {
     "schedule_tour": FUNC_SCHEDULE_TOUR,
-    "collect_user_info": FUNC_COLLECT_USER_INFO
+    "collect_user_info": FUNC_COLLECT_USER_INFO,
+    "talk_to_human": FUNC_TALK_TO_HUMAN
 };

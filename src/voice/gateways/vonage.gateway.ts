@@ -1,6 +1,7 @@
 import {SubscribeMessage, WebSocketGateway} from "@nestjs/websockets";
 import {RespageWebSocketAdapter} from "../../websocket/custom.adapter";
-import {VoiceService} from "../services/voice.service";
+import {VoiceService} from "../../services/voice.service";
+import {forwardRef, Inject} from "@nestjs/common";
 
 export const VONAGE_GATEWAY_PATH = 'websocket/vonage'
 
@@ -8,7 +9,7 @@ export const VONAGE_GATEWAY_PATH = 'websocket/vonage'
 export class VonageGateway {
     clients: RespageWebSocketAdapter[] = [];
 
-    constructor(private voiceService: VoiceService) {}
+    constructor(@Inject(forwardRef(() => VoiceService)) private voiceService: VoiceService) {}
 
     afterInit(server) {
         console.log("Vonage Websocket Gateway initialized");

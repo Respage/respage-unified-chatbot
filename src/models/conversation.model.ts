@@ -14,6 +14,7 @@ export interface PropertyInfo {
     email_address?: string;
     phone_number?: string;
     available_tour_times?: string [];
+    call_forwarding_number?: string,
     tour_availability?: {
         campaign_id?: number;
         name?: string;
