@@ -92,7 +92,6 @@ export class ActiveCall {
             async write(chunk, encoding, callback) {
                 if (!chunk.compare(DONE_BUFFER)) {
                     setTimeout(async () => {
-                        console.log("Done streaming audio out...");
                         notStreaming = true;
                         streamStart = 0;
                         audioLength = 0;
@@ -115,14 +114,12 @@ export class ActiveCall {
                         streamStart = Date.now();
                         original_this.stopTyping();
                         notStreaming = false;
-                        console.log("Start streaming audio out...");
                     }
 
                     audioLength += (chunk.length / 640) * 20;
 
                     for (let i = 0; i < chunk.length; i+= 640) {
                         let subArray = chunk.subarray(i, i + 640);
-                        console.log("PACKET LENGTH: ", subArray.length);
                         websocket.send(subArray);
                         await (new Promise(resolve => setTimeout(resolve, 18)))
                     }
@@ -196,7 +193,7 @@ export class ActiveCall {
                         original_this.pool.push(chunk);
                         if (original_this.pool.length >= START_TALKING_THRESHOLD) {
                             original_this.state = ActiveCallStreamState.STREAM;
-                            console.log("Streaming...");
+
                             yield original_this.pool.shift();
                         }
                     } else {
@@ -233,7 +230,6 @@ export class ActiveCall {
     }
 
     startListening() {
-        console.log("Pooling...");
         this.stopTyping();
         // this.playAmbiant().then();
         this.doNotInterrupt = false;
@@ -273,7 +269,6 @@ export class ActiveCall {
             }
 
             const waitTime = (buffer.length / 32);
-            console.log ("WAITING ", (waitTime / 1000).toFixed(2), " Before next typing.");
 
             await (new Promise<void>(resolve => {
                 let monitorInterval;

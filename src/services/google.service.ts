@@ -29,11 +29,9 @@ export class GoogleService {
             read() {},
             async write(chunk: any, encoding: BufferEncoding, callback: TransformCallback) {
                 if (chunk.compare(DONE_BUFFER)) {
-                    console.log("Collect speech to text audio...");
                     chunks.push(chunk);
                 } else {
                     try {
-                        console.log("Start converting speech to text...");
                         call.stopListening();
                         call.startTyping().then();
 

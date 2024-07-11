@@ -130,11 +130,9 @@ export class OpenAiService {
             read() {},
             async write(chunk, encoding, callback) {
                 if (chunk.compare(DONE_BUFFER)) {
-                    console.log("Collect prompt text...");
                     chunks.push(chunk);
                 } else {
                     if (chunks.length) {
-                        console.log("Send AI prompt...");
                         const completeBuffer = Buffer.concat(chunks);
 
                         let responsePromise;
@@ -153,13 +151,17 @@ export class OpenAiService {
                                 const params = toolCall.function.arguments;
                                 switch (toolCall.function.name) {
                                     case "schedule_tour": {
-                                        console.log("SCHEDULE TOUR");
                                         if (!(
                                             params.time &&
                                             params.day &&
                                             params.month
                                         )) {
                                             await original_this.speakPrompt(stream, call, "[Apologize because something has gone wrong and ask the user to try again.]");
+                                            break;
+                                        }
+
+                                        if (call.conversation.conversationInfo.tour_scheduled) {
+                                            await original_this.speakPrompt(stream, call, "[Tell the user they have already scheduled a tour and tell them the date and time.]");
                                             break;
                                         }
 
@@ -195,8 +197,6 @@ export class OpenAiService {
                                         console.log(tourTimes, tourDateTime.toISO());
                                         if (tourTimes.find(t => +DateTime.fromISO(t) === +tourDateTime)) {
                                             if (tourDateTimeConfirmed) {
-                                                console.log("TOUR SCHEDULED: ", tourDateTime.toISO());
-
                                                 conversationInfoUpdate.tour_date_time = tourDateTime;
                                                 conversationInfoUpdate.tour_scheduled = true;
                                                 conversationInfoUpdate.tour_date_time_confirmed = true;

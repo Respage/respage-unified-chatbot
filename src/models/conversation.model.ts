@@ -94,7 +94,6 @@ export class Conversation {
 
 
 
-        console.log(this.conversationInfo);
         this.systemPrompt = { role: 'system', content };
     }
 

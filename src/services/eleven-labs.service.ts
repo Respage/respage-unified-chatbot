@@ -22,11 +22,9 @@ export class ElevenLabsService {
             read() {},
             async write(chunk, encoding, callback) {
                 if (chunk.compare(DONE_BUFFER)) {
-                    console.log("Collect AI response text...");
                     chunks.push(chunk);
                 } else {
                     if (chunks.length) {
-                        console.log("Start converting speech to text...");
                         let strs: any = Buffer.concat(chunks)
                             .toString().split(/(\. |! |\?)/)
                             .map(x => !!x ? x.trim().replace(/[\n]+/g, ' ') : x);
