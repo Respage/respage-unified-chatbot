@@ -41,7 +41,13 @@ export const FUNC_COLLECT_USER_INFO = {
 
 export const FUNC_TALK_TO_HUMAN = {
     name: "talk_to_human",
-    description: "Call if the user wishes to speak to a human representative.",
+    description: "The user is getting overly frustrated, or wishes to speak to a human being.",
+    parameters: {
+        type: "object",
+        properties: {
+            reason: {type: "string", description: "The reason the user should be put in contact with a human being."}
+        }
+    }
 };
 
 export const FUNCTIONS = {

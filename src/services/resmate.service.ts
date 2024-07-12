@@ -1,7 +1,7 @@
 import axios from "axios";
 import {Injectable} from "@nestjs/common";
 import {DateTime} from "luxon";
-import {Conversation, ConversationInfo, PropertyInfo} from "../models/conversation.model";
+import {ChatHistoryLog, Conversation, ConversationInfo, PropertyInfo} from "../models/conversation.model";
 import {ActiveCall} from "../models/active-call.model";
 
 export interface UpsertProspectParams {
@@ -37,6 +37,25 @@ export class ResmateService {
     private readonly headers = {
         Authorization: `Basic ${process.env.RESMATE_BASIC_AUTH_ENCODED}`
     };
+
+    static generateConversationLog(chatHistory: Array<ChatHistoryLog>) {
+        return [
+            {
+                from: 'user',
+                direction: 'in',
+                body: '[Call Initiated]',
+                timestamp: chatHistory[0].timestamp
+            },
+            ...chatHistory.map(x => {
+                return {
+                    from: x.role === 'assistant' ? 'bot' : 'user',
+                    direction: x.role === 'assistant' ? 'out' : 'in',
+                    body: x.content,
+                    timestamp: x.timestamp
+                };
+            })
+        ]
+    }
 
     async getVoiceInbox(phone_number: string) {
         const response = await axios({
@@ -98,22 +117,7 @@ export class ResmateService {
                 locale: 'en-US',
                 status: 'closed',
                 service_id: call.id,
-                logs: [
-                    {
-                        from: 'user',
-                        direction: 'in',
-                        body: '[Call Initiated]',
-                        timestamp: callHistory[0].timestamp
-                    },
-                    ...callHistory.map(x => {
-                    return {
-                        from: x.role === 'assistant' ? 'bot' : 'user',
-                        direction: x.role === 'assistant' ? 'out' : 'in',
-                        body: x.content,
-                        timestamp: x.timestamp
-                    };
-                })
-                ]
+                logs: ResmateService.generateConversationLog(callHistory)
             },
             headers: this.headers
         });
@@ -196,6 +200,34 @@ export class ResmateService {
         return reservationResponse.data.data;
     }
 
+    async escalateToHumanContact(call: ActiveCall, custom?: string) {
+        const data = {
+            prospect: call.conversation.conversationInfo.prospect || {
+                first_name: call.conversation.conversationInfo.first_name,
+                last_name: call.conversation.conversationInfo.last_name,
+                campaign_id: call.conversation.campaign_id,
+                phone: call.conversation.conversationInfo.prospect.conversationInfo.phone,
+            },
+            conversation: {
+                log: ResmateService.generateConversationLog(call.conversation.getCallHistory())
+            },
+        };
+
+        const result = await axios({
+            url: `${process.env.RESMATE_API_URL}/private/prospect/escalate`,
+            method: 'PUT',
+            headers: this.headers,
+            data: {
+                data,
+                reason: "LLM",
+                conversationType: "voice",
+                custom
+            }
+        });
+
+        console.log(result);
+    }
+
     async isDuringOfficeHours(campaign_id: number, time: DateTime = DateTime.now()) {
         const timeISO = time.toISO();
         const response = await axios({
@@ -217,6 +249,6 @@ export class ResmateService {
             return false;
         }
 
-        return open < time && close > time;
+        return +open < +time && +close > +time;
     }
 }

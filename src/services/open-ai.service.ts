@@ -228,14 +228,27 @@ export class OpenAiService {
                                         await original_this.speakPrompt(stream, call, prompt);
                                     } break;
                                     case "talk_to_human": {
+                                        let prompt;
                                         if (call.canForwardCall()) {
-                                            await original_this.speakPrompt(stream, call, "[Tell the user you will forward them to someone at the property now.]")
-
+                                            prompt = "[Tell the user you will forward them to someone at the property now.]";
                                             call.forward()
-                                            break;
+                                            try {
+                                                await original_this.resmateService.escalateToHumanContact(call, params.reason)
+                                            } catch(e) {
+                                                console.error(e);
+                                            }
+                                        } else {
+                                            prompt = "[Tell the user you will notify someone at the office and then offer to help them with something else.]";
+
+                                            try {
+                                                await original_this.resmateService.escalateToHumanContact(call, params.reason)
+                                            } catch(e) {
+                                                console.error(e);
+                                                prompt = "[Apologize and tell the user you were unable to contact the office. Ask them if there is any other way you can help.]"
+                                            }
                                         }
 
-                                        await original_this.speakPrompt(stream, call, "[Tell the user you will notify someone at the office and then offer to help them with something else.]")
+                                        await original_this.speakPrompt(stream, call, prompt);
                                     } break;
                                 }
                             }
