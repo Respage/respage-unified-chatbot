@@ -339,7 +339,8 @@ export class ActiveCall {
     }
 
     canForwardCall() {
-        return this.conversation.propertyInfo.call_forwarding_number;
+        console.log("this.conversation.conversationInfo ", this.conversation.conversationInfo);
+        return this.conversation.propertyInfo.call_forwarding_number && this.conversation.conversationInfo.is_during_office_hours;
     }
 
     forward() {

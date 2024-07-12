@@ -235,7 +235,7 @@ export class OpenAiService {
                                             break;
                                         }
 
-                                        await original_this.speakPrompt(stream, call, "[Tell the user you will notify someone at the office and then offer to help them without something else.]")
+                                        await original_this.speakPrompt(stream, call, "[Tell the user you will notify someone at the office and then offer to help them with something else.]")
                                     } break;
                                 }
                             }

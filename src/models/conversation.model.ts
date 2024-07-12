@@ -40,6 +40,7 @@ export interface ConversationInfo {
     move_in_date?: DateTime;
     unit_type?: string;
     interests?: string[];
+    is_during_office_hours?: boolean;
 }
 
 export type ChatHistoryLog = ChatCompletionMessageParam & { timestamp?: Date };

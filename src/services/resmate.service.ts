@@ -195,4 +195,27 @@ export class ResmateService {
 
         return reservationResponse.data.data;
     }
+
+    async isDuringOfficeHours(campaign_id: number, time: DateTime = DateTime.now()) {
+        const timeISO = time.toISO();
+        const response = await axios({
+            url: `${process.env.RESMATE_API_URL}/private/settings/${campaign_id}/hours?start=${timeISO}&end=${timeISO}`,
+            method: 'GET',
+        });
+
+        const hours = response.data?.data?.[0];
+
+        if (!hours) {
+            return false;
+        }
+
+        const open = DateTime.fromFormat(`${time.year} ${time.month} ${time.day} ${hours.start_hour}`, 'y M d t');
+        const close =  DateTime.fromFormat(`${time.year} ${time.month} ${time.day} ${hours.end_hour}`, 'y M d t');
+
+        if (!open.isValid || !close.isValid) {
+            return false;
+        }
+
+        return open < time && close > time;
+    }
 }

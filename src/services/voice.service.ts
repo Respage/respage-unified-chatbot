@@ -59,6 +59,11 @@ export class VoiceService {
             })
             .catch(e => console.error(e));
 
+        this.resmateService.isDuringOfficeHours(campaign_id)
+            .then((is_during_office_hours) => {
+                call.updateSystemPrompt(null, {is_during_office_hours});
+            });
+
         this.resmateService.getProspect(campaign_id, from_number)
             .then(async prospect => {
                 if (prospect) {
