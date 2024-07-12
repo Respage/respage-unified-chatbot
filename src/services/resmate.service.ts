@@ -201,6 +201,7 @@ export class ResmateService {
         const response = await axios({
             url: `${process.env.RESMATE_API_URL}/private/settings/${campaign_id}/hours?start=${timeISO}&end=${timeISO}`,
             method: 'GET',
+            headers: this.headers
         });
         console.log(response.data?.data);
         const hours = response.data?.data?.[0];
