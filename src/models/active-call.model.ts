@@ -102,7 +102,7 @@ export class ActiveCall {
                                 await voiceService.forwardCall(original_this);
                             } catch (e) {
                                 console.error(e);
-                                await openAiService.speakPrompt(callStream, this, "[The call could not be forwarded. Apologize to the user and ask if they need anything else.]")
+                                await openAiService.speakPrompt(callStream, original_this, "[The call could not be forwarded. Apologize to the user and ask if they need anything else.]")
                             }
                             return;
                         }
