@@ -40,6 +40,14 @@ export class VonageService {
     }
 
     async forwardCall(conversation_uuid: string, fromNumber: string, forwardingNumber: string) {
+        console.log(
+`
+FORWARD CALL
+conversation_uuid: ${conversation_uuid}
+fromNumber: ${fromNumber}
+forwardingNumber: ${forwardingNumber}
+`
+        );
         return this.vonage.voice.transferCallWithNCCO(
             conversation_uuid,
             [{

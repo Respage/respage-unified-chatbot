@@ -116,7 +116,11 @@ export class VoiceService {
     }
 
     async forwardCall(call: ActiveCall) {
-        return this.vonageService.forwardCall(call.id, call.conversation.conversationInfo.phone, call.conversation.propertyInfo.call_forwarding_number);
+        return this.vonageService.forwardCall(
+            call.id,
+            call.conversation.conversationInfo.phone,
+            call.conversation.propertyInfo.call_forwarding_number
+        );
     }
 
     getActiveCall(id: string) {
