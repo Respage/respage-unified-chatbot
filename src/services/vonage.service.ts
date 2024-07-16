@@ -39,17 +39,18 @@ export class VonageService {
         return {filename, file: Buffer.from(result.data)};
     }
 
-    async forwardCall(conversation_uuid: string, fromNumber: string, forwardingNumber: string) {
+    async forwardCall(call_id: string, fromNumber: string, forwardingNumber: string) {
         console.log(
 `
 FORWARD CALL
-conversation_uuid: ${conversation_uuid}
+call_id: ${call_id}
 fromNumber: ${fromNumber}
 forwardingNumber: ${forwardingNumber}
 `
         );
+
         return this.vonage.voice.transferCallWithNCCO(
-            conversation_uuid,
+            call_id,
             [{
                 action: NCCOActions.CONNECT,
                 eventType: ConnectEventType.SYNCHRONOUS,

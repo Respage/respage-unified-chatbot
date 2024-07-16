@@ -31,7 +31,7 @@ export class VonageGateway {
     async handleMessage(client, payload) {
         try {
             console.log(payload);
-            await this.voiceService.startCall(payload.conversation_id, payload.from_number, payload.to_number, client);
+            await this.voiceService.startCall(payload.conversation_id, payload.call_id, payload.from_number, payload.to_number, client);
         } catch (e) {
             console.log(e);
         }

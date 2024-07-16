@@ -116,7 +116,7 @@ export class ResmateService {
                 contact: {user_phone: call.conversation.conversationInfo.phone},
                 locale: 'en-US',
                 status: 'closed',
-                service_id: call.id,
+                service_id: call.conversation_id,
                 logs: ResmateService.generateConversationLog(callHistory)
             },
             headers: this.headers

@@ -29,7 +29,8 @@ export class VoiceController {
                         headers: {
                             from_number: (req.query.from as string).slice(1),
                             to_number: (req.query.to as string).slice(1),
-                            conversation_id: req.query.conversation_uuid
+                            conversation_id: req.query.conversation_uuid,
+                            call_id: req.query.uuid
                         }
                     }
                 ]

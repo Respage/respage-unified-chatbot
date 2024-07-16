@@ -32,7 +32,7 @@ export class VoiceService {
         @Inject(forwardRef(() => VonageService)) private vonageService: VonageService
     ) {}
 
-    async startCall(id: string, from_number: string, to_number: string, callSocket: WebSocket) {
+    async startCall(conversation_id: string, call_id: string, from_number: string, to_number: string, callSocket: WebSocket) {
         const voiceInbox = await this.resmateService.getVoiceInbox(to_number);
         if (!voiceInbox) {
             return;
@@ -40,8 +40,8 @@ export class VoiceService {
 
         const campaign_id = voiceInbox.campaign_id;
 
-        const call = new ActiveCall(id, campaign_id);
-        this.activeCalls[id] = call;
+        const call = new ActiveCall(call_id, conversation_id, campaign_id);
+        this.activeCalls[conversation_id] = call;
 
         const info = await this.redisService.getSystemPromptData(campaign_id);
 
