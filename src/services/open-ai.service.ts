@@ -286,6 +286,7 @@ export class OpenAiService {
         const params: ChatCompletionCreateParamsNonStreaming = {
             model: "gpt-4o",
             messages: additionalMessage ? [...call.getCallMessageWindow(), additionalMessage] : call.getCallMessageWindow(),
+            temperature: +process.env.OPEN_AI_TEMP,
             stream: false,
         };
 
