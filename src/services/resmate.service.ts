@@ -22,6 +22,7 @@ export interface UpsertProspectParams {
     referrer_id: string,
     utm: any,
     sms_opt_in: boolean,
+    sms_opt_in_source: string,
     campaign_id: number
 }
 
