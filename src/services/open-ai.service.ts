@@ -151,6 +151,7 @@ export class OpenAiService {
                                 const params = toolCall.function.arguments;
                                 switch (toolCall.function.name) {
                                     case "schedule_tour": {
+                                        console.log("Open AI completion stream: SCHEDULE TOUR FUNCTION CALLED");
                                         if (!(
                                             params.time &&
                                             params.day &&
@@ -228,6 +229,7 @@ export class OpenAiService {
                                         await original_this.speakPrompt(stream, call, prompt);
                                     } break;
                                     case "talk_to_human": {
+                                        console.log("Open AI completion stream: TALK TO A HUMAN FUNCTION CALLED")
                                         let prompt;
                                         if (call.canForwardCall()) {
                                             prompt = "[Tell the user you will forward them to someone at the property now.]";
