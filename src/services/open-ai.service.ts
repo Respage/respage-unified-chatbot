@@ -286,7 +286,7 @@ export class OpenAiService {
 
     async getResponse(call: ActiveCall, additionalMessage?: ChatHistoryLog, function_call: 'none' | 'auto' = 'auto') {
         const params: ChatCompletionCreateParamsNonStreaming = {
-            model: "gpt-4o-mini",
+            model: process.env.OPEN_AI_GPT_MODEL,
             messages: additionalMessage ? [...call.getCallMessageWindow(), additionalMessage] : call.getCallMessageWindow(),
             temperature: +process.env.OPEN_AI_TEMP,
             stream: false,
@@ -321,7 +321,7 @@ export class OpenAiService {
 
     async getFunctionResults(call: ActiveCall, funcName: string) {
         const params: ChatCompletionCreateParamsNonStreaming = {
-            model: "gpt-4o-mini",
+            model: process.env.OPEN_AI_GPT_MODEL,
             messages: call.getCallHistory(),
             stream: false,
         };
