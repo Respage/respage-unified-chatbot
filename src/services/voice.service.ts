@@ -106,6 +106,14 @@ export class VoiceService {
 
             const conversation = await this.resmateService.addConversation(call);
 
+            if (call.conversation.conversationInfo.prospect.first_name) {
+                delete user_info.first_name;
+            }
+
+            if (call.conversation.conversationInfo.prospect.last_name) {
+                delete user_info.last_name;
+            }
+
             await this.resmateService.upsertProspect(
                 call.conversation.campaign_id,
                 {
