@@ -221,7 +221,7 @@ export class OpenAiService {
                                                 if (conversationInfoUpdate.sms_consent) {
                                                     await original_this.resmateService.upsertProspect(
                                                         call.conversation.conversationInfo.prospect.campaign_id,
-                                                        {sms_opt_in: true, sms_opt_in_source: 'voice'}
+                                                        {sms_opt_in: true, sms_opt_in_source: 'voice', phone: call.conversation.conversationInfo.phone}
                                                     );
                                                 }
                                                 await original_this.resmateService.scheduleTour(call.conversation);
