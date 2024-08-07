@@ -49,7 +49,6 @@ export class RedisService {
         this._client.connect();
 
         this._pingInterval = setInterval(async () => {
-            console.log('REDIS SERVICE Sending Ping...');
             await this._client.ping();
         }, 30000);
     }
