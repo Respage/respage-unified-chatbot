@@ -157,6 +157,7 @@ export class OpenAiService {
                                             params.day &&
                                             params.month
                                         )) {
+                                            console.log("Open AI completion stream: time, day, month params missing", call.conversation.conversationInfo, params);
                                             await original_this.speakPrompt(stream, call, "[Apologize because something has gone wrong and ask the user to try again.]");
                                             break;
                                         }
@@ -226,7 +227,7 @@ export class OpenAiService {
                                                 }
                                                 await original_this.resmateService.scheduleTour(call.conversation);
                                             } catch (e) {
-                                                console.error(e);
+                                                console.error("Open AI completion stream: schedule tour error", e);
                                                 call.updateSystemPrompt(null, {tour_scheduled: false});
                                                 prompt = "[Apologize to the user because something went wrong scheduling the tour.";
                                             }
