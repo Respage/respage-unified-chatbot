@@ -192,7 +192,8 @@ export class ResmateService {
                         is_recurring: false,
                         status: 'approved',
                         timezone,
-                        external_integration_response: remoteReservationResponse.data.data
+                        external_integration_response: remoteReservationResponse.data.data,
+                        update_prospect_send_notification: true
                     }
                 }
             }
