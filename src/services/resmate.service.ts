@@ -174,7 +174,8 @@ export class ResmateService {
                         message: interests?.length ? `Prospect is interested in ${interests.join(', ')}` : null,
                     },
                     prospect,
-                    integration_options: schedule_tour_options
+                    integration_options: schedule_tour_options,
+                    notification_type: 'voice'
                 },
                 timezone
             }
