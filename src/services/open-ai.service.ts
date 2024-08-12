@@ -197,7 +197,7 @@ export class OpenAiService {
                                             tourDateTime.toFormat('yyyy-LL-dd'),
                                             1
                                         );
-                                        winston.info(tourTimes, tourDateTime.toISO());
+                                        winston.info({tourTimes, tourDateTime: tourDateTime.toISO()});
                                         if (tourTimes.find(t => +DateTime.fromISO(t) === +tourDateTime)) {
                                             if (tourDateTimeConfirmed) {
                                                 conversationInfoUpdate.tour_date_time = tourDateTime;
