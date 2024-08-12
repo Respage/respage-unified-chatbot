@@ -38,7 +38,6 @@ export class ElevenLabsService {
                             strs[i + 1] = null;
                         }
                         strs = strs.filter(x => !!x);
-                        // console.log(strs);
 
                         let previous = 'Quickly but pleasantly they said: "';
                         let current = strs[0];

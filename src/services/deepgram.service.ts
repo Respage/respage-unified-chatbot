@@ -1,3 +1,4 @@
+import winston from "winston";
 import {forwardRef, Inject, Injectable} from "@nestjs/common";
 import {Duplex} from "stream";
 import {VoiceService} from "./voice.service";
@@ -29,7 +30,7 @@ export class DeepgramService {
 
         connection.on(LiveTranscriptionEvents.Open, () => {
             connection.on(LiveTranscriptionEvents.Close, () => {
-                console.log("Connection closed.");
+                winston.info("Connection closed.");
             });
 
             connection.on(LiveTranscriptionEvents.Transcript, (data) => {
@@ -40,7 +41,7 @@ export class DeepgramService {
             });
 
             connection.on(LiveTranscriptionEvents.Metadata, (data) => {
-                console.log(data);
+                winston.info(data);
             });
 
             connection.on(LiveTranscriptionEvents.Error, (err) => {
@@ -130,7 +131,7 @@ export class DeepgramService {
                     }
 
                     const window = chunkBuffer.subarray(chunkIndex, overflowIndex);
-                    // console.log(window.length / 640);
+                    // winston.info(window.length / 640);
 
                     stream.push(window);
                 }

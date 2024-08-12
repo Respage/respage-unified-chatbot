@@ -1,3 +1,4 @@
+import winston from "winston";
 import {ChatHistoryLog, ConversationInfo} from "../models/conversation.model";
 
 if (!process.env.NODE_ENV) {
@@ -151,13 +152,13 @@ export class OpenAiService {
                                 const params = toolCall.function.arguments;
                                 switch (toolCall.function.name) {
                                     case "schedule_tour": {
-                                        console.log("Open AI completion stream: SCHEDULE TOUR FUNCTION CALLED");
+                                        winston.info("Open AI completion stream: SCHEDULE TOUR FUNCTION CALLED");
                                         if (!(
                                             params.time &&
                                             params.day &&
                                             params.month
                                         )) {
-                                            console.log("Open AI completion stream: time, day, month params missing", call.conversation.conversationInfo, params);
+                                            winston.info("Open AI completion stream: time, day, month params missing", call.conversation.conversationInfo, params);
                                             await original_this.speakPrompt(stream, call, "[Apologize because something has gone wrong and ask the user to try again.]");
                                             break;
                                         }
@@ -196,7 +197,7 @@ export class OpenAiService {
                                             tourDateTime.toFormat('yyyy-LL-dd'),
                                             1
                                         );
-                                        console.log(tourTimes, tourDateTime.toISO());
+                                        winston.info(tourTimes, tourDateTime.toISO());
                                         if (tourTimes.find(t => +DateTime.fromISO(t) === +tourDateTime)) {
                                             if (tourDateTimeConfirmed) {
                                                 conversationInfoUpdate.tour_date_time = tourDateTime;
@@ -236,7 +237,7 @@ export class OpenAiService {
                                         await original_this.speakPrompt(stream, call, prompt);
                                     } break;
                                     case "talk_to_human": {
-                                        console.log("Open AI completion stream: TALK TO A HUMAN FUNCTION CALLED")
+                                        winston.info("Open AI completion stream: TALK TO A HUMAN FUNCTION CALLED")
                                         let prompt;
                                         if (call.canForwardCall()) {
                                             prompt = "[Tell the user you will forward them to someone at the property now.]";
@@ -275,7 +276,7 @@ export class OpenAiService {
         });
 
         call.onClose(() => {
-            console.log("Closing Open AI completion stream");
+            winston.info("Closing Open AI completion stream");
             stream.end();
         });
 

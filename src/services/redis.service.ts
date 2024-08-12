@@ -1,3 +1,4 @@
+import winston from "winston";
 import {Injectable} from "@nestjs/common";
 import {createClient, RedisClientType} from "redis";
 
@@ -16,7 +17,7 @@ export class RedisService {
         if (this._client) {
             this._client
                 .disconnect()
-                .then(() => console.log('REDIS SERVICE Client disconnected'))
+                .then(() => winston.info('REDIS SERVICE Client disconnected'))
                 .catch((err) =>
                     console.error('REDIS SERVICE Error disconnecting client', { err }),
                 );
@@ -29,7 +30,7 @@ export class RedisService {
         });
 
         (this._client as any).on('connect', () => {
-            console.log('REDIS SERVICE Connected to Redis!');
+            winston.info('REDIS SERVICE Connected to Redis!');
         });
 
         (this._client as any).on('error', (err) => {
@@ -41,7 +42,7 @@ export class RedisService {
                         err.code,
                     ) > -1)
             ) {
-                console.log('Server stopped due to redis connection');
+                winston.info('Server stopped due to redis connection');
                 process.exit(1);
             }
         });

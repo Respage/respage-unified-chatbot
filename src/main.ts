@@ -2,7 +2,9 @@ if (!process.env.NODE_ENV) {
   require('dotenv-extended').load({path: '.env'});
 }
 
-process.env.PROMPT = require('fs').readFileSync('prompt', {encoding: 'utf-8'});
+import * as winstonService from './services/winston-log.service';
+winstonService.init();
+
 
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';

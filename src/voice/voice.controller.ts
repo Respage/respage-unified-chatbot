@@ -1,4 +1,5 @@
 import {Request} from 'express';
+import winston from 'winston';
 import {Controller, Get, Post, Req} from '@nestjs/common';
 import {VONAGE_GATEWAY_PATH} from "./gateways/vonage.gateway";
 import {OpenAiService} from "../services/open-ai.service";
@@ -14,6 +15,7 @@ export class VoiceController {
 
     @Get('/answer')
     answer(@Req() req: Request): any {
+        winston.info('REQUEST TO /answer', req.query);
         return [
             {
                 action: "record",
@@ -40,26 +42,29 @@ export class VoiceController {
 
     @Get('/input')
     input(@Req() req: Request) {
-        console.log(req.query);
+        winston.info('REQUEST TO /input', req.query);
     }
 
     @Get('/event')
     event(@Req() req: Request) {
-        console.log('/event', req.query);
+        winston.info('REQUEST TO /event', req.query);
     }
 
     @Get('/fallback')
     fallback(): string {
+        winston.info('REQUEST TO /fallback');
         return 'Fallback';
     }
 
     @Get('/text-embedding')
     getEmbedding(@Req() req: Request) {
+        winston.info('REQUEST TO /text-embedding');
         return this.openAiService.getTextEmbedding(req.query.text);
     }
 
     @Post('/recording')
     async recording(@Req() req: Request) {
+        winston.info('REQUEST TO /recording');
         try {
             const { filename, file } = await this.vonageService.getConversationAudioFile(req.body.recording_url);
 

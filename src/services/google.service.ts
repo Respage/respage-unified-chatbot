@@ -1,3 +1,4 @@
+import winston from "winston";
 import {forwardRef, Inject, Injectable} from '@nestjs/common';
 
 import {SpeechClient} from '@google-cloud/speech';
@@ -116,7 +117,7 @@ export class GoogleService {
         });
 
         call.onClose(() => {
-            console.log("Closing Google speech to text stream");
+            winston.info("Closing Google speech to text stream");
             transcriptionStream?.end()
             stream.end();
         });
@@ -165,7 +166,7 @@ export class GoogleService {
         });
 
         call.onClose(() => {
-            console.log("Closing Google text to speech stream");
+            winston.info("Closing Google text to speech stream");
             stream.end();
         });
 

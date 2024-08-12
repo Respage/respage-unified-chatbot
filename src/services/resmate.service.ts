@@ -1,3 +1,4 @@
+import winston from "winston";
 import axios from "axios";
 import {Injectable} from "@nestjs/common";
 import {DateTime} from "luxon";
@@ -228,7 +229,7 @@ export class ResmateService {
             }
         });
 
-        console.log(result);
+        winston.info(result);
     }
 
     async isDuringOfficeHours(campaign_id: number, time: DateTime = DateTime.now()) {
@@ -238,7 +239,7 @@ export class ResmateService {
             method: 'GET',
             headers: this.headers
         });
-        console.log(response.data?.data);
+        winston.info(response.data?.data);
         const hours = response.data?.data?.[0];
 
         if (!hours) {

@@ -1,3 +1,4 @@
+import winston from "winston";
 import {forwardRef, Inject, Injectable} from '@nestjs/common';
 import {VoiceService} from "./voice.service";
 import {ActiveCall} from "../models/active-call.model";
@@ -26,7 +27,7 @@ export class UnrealSpeechService {
         });
 
         call.onClose(() => {
-            console.log("Closing Unreal Speech text to speech stream");
+            winston.info("Closing Unreal Speech text to speech stream");
             stream.end();
         });
 

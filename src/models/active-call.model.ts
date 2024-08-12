@@ -1,5 +1,6 @@
 import {WebSocket} from "ws";
 import {Duplex, promises as nodeStreamPromises} from "stream";
+import winston from "winston";
 import {VoiceService} from "../services/voice.service";
 import {ChatHistoryLog, Conversation, ConversationInfo, PropertyInfo} from "./conversation.model";
 import {DateTime} from "luxon";
@@ -80,6 +81,7 @@ export class ActiveCall {
          openAiService: OpenAiService,
          voiceService: VoiceService,
     ) {
+        winston.info('ActiveCall init', {call: this});
         const original_this = this;
 
         this.updateSystemPrompt(systemPrompData.property, systemPrompData.conversation);
@@ -103,7 +105,7 @@ export class ActiveCall {
                             try {
                                 await voiceService.forwardCall(original_this);
                             } catch (e) {
-                                console.error(e);
+                                winston.error("ActiveCall callStream", {e});
                                 await openAiService.speakPrompt(callStream, original_this, "[The call could not be forwarded. Apologize to the user and ask if they need anything else.]")
                             }
                             return;
@@ -133,6 +135,7 @@ export class ActiveCall {
 
         websocket.on('message', (msg) => callStream.push(msg));
         websocket.on('close', async () => {
+            winston.info("ActiveCall websocket on close", {call: this});
             for (const callback of this.onCloseCallbacks) {
                 callback();
             }
@@ -154,9 +157,9 @@ export class ActiveCall {
             textToSpeech,
             callStream
         ])
-            .catch(e => {
-                console.error(e);
-            });
+        .catch(e => {
+            winston.error("activeCall pipeline", {e});
+        });
     }
 
     // Interface methods
@@ -288,7 +291,6 @@ export class ActiveCall {
             }));
         } while (!this.doStopTyping);
 
-        // console.log("SECONDS OF TYPING SENT: ", (sent * 20) / 1000);
         this.stopTyping();
     }
 
@@ -341,7 +343,6 @@ export class ActiveCall {
     }
 
     canForwardCall() {
-        console.log("this.conversation.conversationInfo ", this.conversation.conversationInfo);
         return this.conversation.propertyInfo.call_forwarding_number && this.conversation.conversationInfo.is_during_office_hours;
     }
 

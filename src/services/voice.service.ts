@@ -2,6 +2,7 @@ import { readFileSync } from 'fs';
 import { DateTime } from 'luxon';
 import {forwardRef, Inject, Injectable} from '@nestjs/common';
 import {WebSocket} from "ws";
+import winston from "winston";
 import {GoogleService} from "./google.service";
 import {ElevenLabsService} from "./eleven-labs.service";
 import {ActiveCall} from "../models/active-call.model";
@@ -35,6 +36,16 @@ export class VoiceService {
     async startCall(conversation_id: string, call_id: string, from_number: string, to_number: string, callSocket: WebSocket) {
         const voiceInbox = await this.resmateService.getVoiceInbox(to_number);
         if (!voiceInbox) {
+            winston.error(
+                'VoiceService startCall no voiceInbox',
+                {
+                    conversation_id,
+                    call_id,
+                    from_number,
+                    to_number,
+                    callSocket
+                }
+            );
             return;
         }
 
@@ -57,12 +68,13 @@ export class VoiceService {
                     call.updateSystemPrompt({available_tour_times});
                 }
             })
-            .catch(e => console.error(e));
+            .catch(e => winston.error({e}));
 
         this.resmateService.isDuringOfficeHours(campaign_id)
             .then((is_during_office_hours) => {
                 call.updateSystemPrompt(null, {is_during_office_hours});
-            });
+            })
+            .catch(e => winston.error({e}));
 
         this.resmateService.getProspect(campaign_id, from_number)
             .then(async prospect => {
@@ -82,7 +94,7 @@ export class VoiceService {
 
                 call.updateSystemPrompt(null, {prospect, first_name: prospect.first_name, last_name: prospect.last_name});
             })
-            .catch(e => console.error(e));
+            .catch(e => winston.error({e}));
 
         call.init(
             callSocket,

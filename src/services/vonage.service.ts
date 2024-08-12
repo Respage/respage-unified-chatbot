@@ -1,3 +1,4 @@
+import winston from "winston";
 import {Injectable} from '@nestjs/common';
 import {Auth} from '@vonage/auth';
 import {Vonage} from "@vonage/server-sdk";
@@ -40,14 +41,7 @@ export class VonageService {
     }
 
     async forwardCall(call_id: string, fromNumber: string, forwardingNumber: string) {
-        console.log(
-`
-FORWARD CALL
-call_id: ${call_id}
-fromNumber: ${fromNumber}
-forwardingNumber: ${forwardingNumber}
-`
-        );
+        winston.info("VonageService forwardCall", {call_id, fromNumber, forwardingNumber});
 
         return this.vonage.voice.transferCallWithNCCO(
             call_id,

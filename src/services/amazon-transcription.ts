@@ -1,6 +1,6 @@
+import winston from "winston";
 import { Injectable } from '@nestjs/common';
 import {StartStreamTranscriptionCommand, TranscribeStreamingClient} from "@aws-sdk/client-transcribe-streaming";
-import {Readable} from "stream";
 
 @Injectable()
 export class AmazonTranscriptionService {
@@ -28,11 +28,10 @@ export class AmazonTranscriptionService {
 
         try {
             for await (const event of response.TranscriptResultStream) {
-                console.log(JSON.stringify(event));
+                winston.info("AmazonTranscriptionService transcribe", {event});
             }
-        } catch(err) {
-            console.log("error")
-            console.log(err)
+        } catch(e) {
+            winston.error("AmazonTranscriptionService transcribe", {e});
         }
     }
 }
