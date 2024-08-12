@@ -154,14 +154,14 @@ export class OpenAiService {
                                 const params = toolCall.function.arguments;
                                 switch (toolCall.function.name) {
                                     case "schedule_tour": {
-                                        this.logger.info("OpenAiService completionStream LLM function schedule_tour", { call, params });
+                                        original_this.logger.info("OpenAiService completionStream LLM function schedule_tour", { call, params });
 
                                         if (!(
                                             params.time &&
                                             params.day &&
                                             params.month
                                         )) {
-                                            this.logger.error(
+                                            original_this.logger.error(
                                                 "OpenAiService completionStream LLM function schedule_tour time, day, month params missing",
                                                 {
                                                     call,
@@ -207,7 +207,7 @@ export class OpenAiService {
                                             1
                                         );
 
-                                        this.logger.info("OpenAiService completionStream LLM function schedule_tour", {call, tourTimes, tourDateTime: tourDateTime.toISO()});
+                                        original_this.logger.info("OpenAiService completionStream LLM function schedule_tour", {call, tourTimes, tourDateTime: tourDateTime.toISO()});
 
                                         if (tourTimes.find(t => +DateTime.fromISO(t) === +tourDateTime)) {
                                             if (tourDateTimeConfirmed) {
@@ -239,7 +239,7 @@ export class OpenAiService {
                                                 }
                                                 await original_this.resmateService.scheduleTour(call.conversation);
                                             } catch (e) {
-                                                this.logger.error("OpenAiService completionStream LLM function schedule_tour", {e, call});
+                                                original_this.logger.error("OpenAiService completionStream LLM function schedule_tour", {e, call});
                                                 call.updateSystemPrompt(null, {tour_scheduled: false});
                                                 prompt = "[Apologize to the user because something went wrong scheduling the tour.";
                                             }
@@ -248,7 +248,7 @@ export class OpenAiService {
                                         await original_this.speakPrompt(stream, call, prompt);
                                     } break;
                                     case "talk_to_human": {
-                                        this.logger.info("OpenAiService completionStream LLM function talk_to_human", {params});
+                                        original_this.logger.info("OpenAiService completionStream LLM function talk_to_human", {params});
                                         let prompt;
                                         if (call.canForwardCall()) {
                                             prompt = "[Tell the user you will forward them to someone at the property now.]";
@@ -256,7 +256,7 @@ export class OpenAiService {
                                             try {
                                                 await original_this.resmateService.escalateToHumanContact(call, params.reason)
                                             } catch(e) {
-                                                this.logger.error({e});
+                                                original_this.logger.error({e});
                                             }
                                         } else {
                                             prompt = "[Tell the user you will notify someone at the office and then offer to help them with something else.]";
@@ -264,7 +264,7 @@ export class OpenAiService {
                                             try {
                                                 await original_this.resmateService.escalateToHumanContact(call, params.reason)
                                             } catch(e) {
-                                                this.logger.error({e});
+                                                original_this.logger.error({e});
                                                 prompt = "[Apologize and tell the user you were unable to contact the office. Ask them if there is any other way you can help.]"
                                             }
                                         }
