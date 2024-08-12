@@ -17,7 +17,7 @@ export class VoiceController {
 
     @Get('/answer')
     answer(@Req() req: Request): any {
-        console.log('REQUEST TO /answer'/*, req.query*/);
+        this.logger.info('REQUEST TO /answer', req.query);
         return [
             {
                 action: "record",
