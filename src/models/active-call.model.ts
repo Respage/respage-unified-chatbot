@@ -62,7 +62,7 @@ export class ActiveCall {
 
         this.onCloseCallbacks = [];
 
-        this.conversation = new Conversation(campaign_id);
+        this.conversation = new Conversation(campaign_id, 'voice');
     }
 
     static compileTourDateTime(timezone: string, time: string, day: string, month: string, year?: string) {

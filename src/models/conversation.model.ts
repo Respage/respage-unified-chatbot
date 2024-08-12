@@ -45,22 +45,30 @@ export interface ConversationInfo {
 
 export type ChatHistoryLog = ChatCompletionMessageParam & { timestamp?: Date };
 
+export type ConversationType = 'voice' | 'chatbot';
+
+const SYSTEM_PROMPTS = {
+    'voice': process.env.SYSTEM_PROMPT_VOICE
+};
+
 export class Conversation {
     readonly campaign_id: number
 
+    type: ConversationType;
     propertyInfo: PropertyInfo;
     conversationInfo: ConversationInfo;
 
     private systemPrompt: ChatCompletionMessageParam;
 
-    private callHistory: Array<ChatHistoryLog>;
+    private conversationHistory: Array<ChatHistoryLog>;
 
-    private callMemory: Array<ChatHistoryLog>;
-    private callMemorySize: number;
+    private conversationMemory: Array<ChatHistoryLog>;
+    private conversationMemorySize: number;
 
     functions: any[] = [];
 
-    constructor(campaign_id: number, callMemorySize = 10) {
+    constructor(campaign_id: number, conversationType: ConversationType, callMemorySize = 10) {
+        this.type = conversationType;
         this.campaign_id = campaign_id;
 
         this.systemPrompt = {
@@ -68,9 +76,9 @@ export class Conversation {
             content: `Today's date is ${(new Date()).toString().split(/\d\d:\d\d:\d\d/)[0].trim()}. ` + process.env.SYSTEM_PROMPT_VOICE
         };
 
-        this.callHistory = [];
-        this.callMemory = [];
-        this.callMemorySize = callMemorySize;
+        this.conversationHistory = [];
+        this.conversationMemory = [];
+        this.conversationMemorySize = callMemorySize;
     }
 
     updateSystemPrompt(propertyInfoUpdate?: PropertyInfo, conversationInfoUpdate?: ConversationInfo) {
@@ -87,7 +95,7 @@ export class Conversation {
         }
 
         let content = `Today's date is ${(new Date()).toString().split(/\d\d:\d\d:\d\d/)[0].trim()}. ` +
-                        process.env.SYSTEM_PROMPT_VOICE +
+                        SYSTEM_PROMPTS[this.type] +
                         "\nYou know the follow information about this user and conversation, it is in JSON format:\n" +
                         JSON.stringify(this.conversationInfo || {}) +
                         "\nYou know the following information about the property, it is in JSON format:\n" +
@@ -100,20 +108,20 @@ export class Conversation {
 
     updateCallHistory(message: ChatHistoryLog) {
         message.timestamp = new Date();
-        this.callHistory.push(message);
+        this.conversationHistory.push(message);
 
-        if (this.callMemory.length === this.callMemorySize) {
-            this.callMemory.shift();
+        if (this.conversationMemory.length === this.conversationMemorySize) {
+            this.conversationMemory.shift();
         }
 
-        this.callMemory.push(message);
+        this.conversationMemory.push(message);
     }
 
     getCallMessageWindow() {
-        return [this.systemPrompt, ...this.callMemory];
+        return [this.systemPrompt, ...this.conversationMemory];
     }
 
     getCallHistory() {
-        return this.callHistory;
+        return this.conversationHistory;
     }
 }
