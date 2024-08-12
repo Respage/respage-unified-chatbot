@@ -41,7 +41,7 @@ export class VonageService {
     }
 
     async forwardCall(call_id: string, fromNumber: string, forwardingNumber: string) {
-        winston.info("VonageService forwardCall", {call_id, fromNumber, forwardingNumber});
+        console.log("VonageService forwardCall"/*, {call_id, fromNumber, forwardingNumber}*/);
 
         return this.vonage.voice.transferCallWithNCCO(
             call_id,

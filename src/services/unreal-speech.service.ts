@@ -27,7 +27,7 @@ export class UnrealSpeechService {
         });
 
         call.onClose(() => {
-            winston.info("Closing Unreal Speech text to speech stream");
+            console.log("Closing Unreal Speech text to speech stream");
             stream.end();
         });
 

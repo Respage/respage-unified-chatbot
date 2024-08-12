@@ -30,7 +30,7 @@ export class DeepgramService {
 
         connection.on(LiveTranscriptionEvents.Open, () => {
             connection.on(LiveTranscriptionEvents.Close, () => {
-                winston.info("Connection closed.");
+                console.log("Connection closed.");
             });
 
             connection.on(LiveTranscriptionEvents.Transcript, (data) => {
@@ -41,7 +41,7 @@ export class DeepgramService {
             });
 
             connection.on(LiveTranscriptionEvents.Metadata, (data) => {
-                winston.info(data);
+                console.log(data);
             });
 
             connection.on(LiveTranscriptionEvents.Error, (err) => {
@@ -131,7 +131,7 @@ export class DeepgramService {
                     }
 
                     const window = chunkBuffer.subarray(chunkIndex, overflowIndex);
-                    // winston.info(window.length / 640);
+                    // console.log(window.length / 640);
 
                     stream.push(window);
                 }

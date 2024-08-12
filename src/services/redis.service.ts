@@ -17,9 +17,9 @@ export class RedisService {
         if (this._client) {
             this._client
                 .disconnect()
-                // .then(() => winston.info('REDIS SERVICE Client disconnected'))
+                // .then(() => console.log('REDIS SERVICE Client disconnected'))
                 .catch((err) =>
-                    console.error('REDIS SERVICE Error disconnecting client', { err }),
+                    console.error('REDIS SERVICE Error disconnecting client'/*, { err }*/),
                 );
             clearInterval(this._pingInterval);
         }
@@ -30,11 +30,11 @@ export class RedisService {
         });
 
         (this._client as any).on('connect', () => {
-            // winston.info('REDIS SERVICE Connected to Redis!');
+            // console.log('REDIS SERVICE Connected to Redis!');
         });
 
         (this._client as any).on('error', (err) => {
-            console.error('REDIS SERVICE Error', { err });
+            console.error('REDIS SERVICE Error'/*, { err }*/);
             if (
                 (typeof err === 'string' && err.includes('connection')) ||
                 (typeof err === 'object' &&
@@ -42,7 +42,7 @@ export class RedisService {
                         err.code,
                     ) > -1)
             ) {
-                // winston.info('Server stopped due to redis connection');
+                // console.log('Server stopped due to redis connection');
                 process.exit(1);
             }
         });
@@ -62,7 +62,7 @@ export class RedisService {
         try {
             return this._client.hGetAll(hashKey as any);
         } catch (err) {
-            console.error('REDIS SERVICE getHash Error', { err });
+            console.error('REDIS SERVICE getHash Error'/*, { err }*/);
         }
     }
 
@@ -70,7 +70,7 @@ export class RedisService {
         try {
             return this._client.hGet(hashKey as any, fieldName as any);
         } catch (err) {
-            console.error('REDIS SERVICE getHashField Error', { err });
+            console.error('REDIS SERVICE getHashField Error'/*, { err }*/);
         }
     }
 
@@ -81,7 +81,7 @@ export class RedisService {
         try {
             return this._client.hmGet(hashKey as any, fieldNames as any);
         } catch (err) {
-            console.error('REDIS SERVICE getHashFields Error', { err });
+            console.error('REDIS SERVICE getHashFields Error'/*, { err }*/);
         }
     }
 
@@ -89,7 +89,7 @@ export class RedisService {
         try {
             return this._client.hDel(hashKey as any, fieldNames as any);
         } catch (err) {
-            console.error('REDIS SERVICE removeHashFields Error', { err });
+            console.error('REDIS SERVICE removeHashFields Error'/*, { err }*/);
         }
     }
 
@@ -101,7 +101,7 @@ export class RedisService {
                 { EX: expiration } as any,
             );
         } catch (err) {
-            console.error('REDIS SERVICE set Error', { err });
+            console.error('REDIS SERVICE set Error'/*, { err }*/);
         }
     }
 
@@ -109,7 +109,7 @@ export class RedisService {
         try {
             return this._client.get(key as any);
         } catch (err) {
-            console.error('REDIS SERVICE get Error', { err });
+            console.error('REDIS SERVICE get Error'/*, { err }*/);
         }
     }
 
@@ -117,7 +117,7 @@ export class RedisService {
         try {
             return this._client.mGet(keys as any);
         } catch (err) {
-            console.error('REDIS SERVICE mget Error', { err });
+            console.error('REDIS SERVICE mget Error'/*, { err }*/);
         }
     }
 
@@ -125,7 +125,7 @@ export class RedisService {
         try {
             return this._client.del(key as any);
         } catch (err) {
-            console.error('REDIS SERVICE remove Error', { err });
+            console.error('REDIS SERVICE remove Error'/*, { err }/*);
         }
     }
 

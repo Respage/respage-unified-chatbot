@@ -36,15 +36,15 @@ export class VoiceService {
     async startCall(conversation_id: string, call_id: string, from_number: string, to_number: string, callSocket: WebSocket) {
         const voiceInbox = await this.resmateService.getVoiceInbox(to_number);
         if (!voiceInbox) {
-            winston.error(
+            console.error(
                 'VoiceService startCall no voiceInbox',
-                {
+            /*{
                     conversation_id,
                     call_id,
                     from_number,
                     to_number,
                     callSocket
-                }
+                }*/
             );
             return;
         }
@@ -68,13 +68,13 @@ export class VoiceService {
                     call.updateSystemPrompt({available_tour_times});
                 }
             })
-            .catch(e => winston.error({e}));
+            .catch(e => console.error({e}));
 
         this.resmateService.isDuringOfficeHours(campaign_id)
             .then((is_during_office_hours) => {
                 call.updateSystemPrompt(null, {is_during_office_hours});
             })
-            .catch(e => winston.error({e}));
+            .catch(e => console.error({e}));
 
         this.resmateService.getProspect(campaign_id, from_number)
             .then(async prospect => {
@@ -94,7 +94,7 @@ export class VoiceService {
 
                 call.updateSystemPrompt(null, {prospect, first_name: prospect.first_name, last_name: prospect.last_name});
             })
-            .catch(e => winston.error({e}));
+            .catch(e => console.error({e}));
 
         call.init(
             callSocket,

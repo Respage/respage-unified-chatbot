@@ -81,7 +81,7 @@ export class ResmateService {
 
             return response.data.data;
         } catch (e) {
-            console.error('getTourDateData error', {e});
+            console.error('getTourDateData error'/*, {e}*/);
             return Promise.resolve(null);
         }
     }
@@ -229,7 +229,7 @@ export class ResmateService {
             }
         });
 
-        winston.info(result);
+        console.log(result);
     }
 
     async isDuringOfficeHours(campaign_id: number, time: DateTime = DateTime.now()) {
@@ -239,7 +239,7 @@ export class ResmateService {
             method: 'GET',
             headers: this.headers
         });
-        winston.info(response.data?.data);
+        console.log(response.data?.data);
         const hours = response.data?.data?.[0];
 
         if (!hours) {

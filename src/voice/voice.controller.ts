@@ -15,7 +15,7 @@ export class VoiceController {
 
     @Get('/answer')
     answer(@Req() req: Request): any {
-        winston.info('REQUEST TO /answer', req.query);
+        console.log('REQUEST TO /answer'/*, req.query*/);
         return [
             {
                 action: "record",
@@ -42,29 +42,29 @@ export class VoiceController {
 
     @Get('/input')
     input(@Req() req: Request) {
-        winston.info('REQUEST TO /input', req.query);
+        console.log('REQUEST TO /input'/*, req.query*/);
     }
 
     @Get('/event')
     event(@Req() req: Request) {
-        winston.info('REQUEST TO /event', req.query);
+        console.log('REQUEST TO /event'/*, req.query*/);
     }
 
     @Get('/fallback')
     fallback(): string {
-        winston.info('REQUEST TO /fallback');
+        console.log('REQUEST TO /fallback');
         return 'Fallback';
     }
 
     @Get('/text-embedding')
     getEmbedding(@Req() req: Request) {
-        winston.info('REQUEST TO /text-embedding');
+        console.log('REQUEST TO /text-embedding');
         return this.openAiService.getTextEmbedding(req.query.text);
     }
 
     @Post('/recording')
     async recording(@Req() req: Request) {
-        winston.info('REQUEST TO /recording');
+        console.log('REQUEST TO /recording');
         try {
             const { filename, file } = await this.vonageService.getConversationAudioFile(req.body.recording_url);
 

@@ -117,7 +117,7 @@ export class GoogleService {
         });
 
         call.onClose(() => {
-            winston.info("Closing Google speech to text stream");
+            console.log("Closing Google speech to text stream");
             transcriptionStream?.end()
             stream.end();
         });
@@ -166,7 +166,7 @@ export class GoogleService {
         });
 
         call.onClose(() => {
-            winston.info("Closing Google text to speech stream");
+            console.log("Closing Google text to speech stream");
             stream.end();
         });
 

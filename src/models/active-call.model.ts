@@ -81,7 +81,7 @@ export class ActiveCall {
          openAiService: OpenAiService,
          voiceService: VoiceService,
     ) {
-        winston.info('ActiveCall init', {call: this});
+        console.log('ActiveCall init'/*, {call: this}*/);
         const original_this = this;
 
         this.updateSystemPrompt(systemPrompData.property, systemPrompData.conversation);
@@ -105,7 +105,7 @@ export class ActiveCall {
                             try {
                                 await voiceService.forwardCall(original_this);
                             } catch (e) {
-                                winston.error("ActiveCall callStream", {e});
+                                console.error("ActiveCall callStream"/*, {e}*/);
                                 await openAiService.speakPrompt(callStream, original_this, "[The call could not be forwarded. Apologize to the user and ask if they need anything else.]")
                             }
                             return;
@@ -135,7 +135,7 @@ export class ActiveCall {
 
         websocket.on('message', (msg) => callStream.push(msg));
         websocket.on('close', async () => {
-            winston.info("ActiveCall websocket on close", {call: this});
+            console.log("ActiveCall websocket on close"/*, {call: this}*/);
             for (const callback of this.onCloseCallbacks) {
                 callback();
             }
@@ -158,7 +158,7 @@ export class ActiveCall {
             callStream
         ])
         .catch(e => {
-            winston.error("activeCall pipeline", {e});
+            console.error("activeCall pipeline"/*, {e}*/);
         });
     }
 

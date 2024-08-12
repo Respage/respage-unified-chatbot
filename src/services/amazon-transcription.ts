@@ -28,10 +28,10 @@ export class AmazonTranscriptionService {
 
         try {
             for await (const event of response.TranscriptResultStream) {
-                winston.info("AmazonTranscriptionService transcribe", {event});
+                console.log("AmazonTranscriptionService transcribe"/*, {event}*/);
             }
         } catch(e) {
-            winston.error("AmazonTranscriptionService transcribe", {e});
+            console.error("AmazonTranscriptionService transcribe"/*, {e}*/);
         }
     }
 }

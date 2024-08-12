@@ -152,13 +152,13 @@ export class OpenAiService {
                                 const params = toolCall.function.arguments;
                                 switch (toolCall.function.name) {
                                     case "schedule_tour": {
-                                        winston.info("Open AI completion stream: SCHEDULE TOUR FUNCTION CALLED");
+                                        console.log("Open AI completion stream: SCHEDULE TOUR FUNCTION CALLED");
                                         if (!(
                                             params.time &&
                                             params.day &&
                                             params.month
                                         )) {
-                                            winston.info("Open AI completion stream: time, day, month params missing", call.conversation.conversationInfo, params);
+                                            console.log("Open AI completion stream: time, day, month params missing"/*, call.conversation.conversationInfo, params*/);
                                             await original_this.speakPrompt(stream, call, "[Apologize because something has gone wrong and ask the user to try again.]");
                                             break;
                                         }
@@ -197,7 +197,7 @@ export class OpenAiService {
                                             tourDateTime.toFormat('yyyy-LL-dd'),
                                             1
                                         );
-                                        winston.info({tourTimes, tourDateTime: tourDateTime.toISO()});
+                                        console.log({tourTimes, tourDateTime: tourDateTime.toISO()});
                                         if (tourTimes.find(t => +DateTime.fromISO(t) === +tourDateTime)) {
                                             if (tourDateTimeConfirmed) {
                                                 conversationInfoUpdate.tour_date_time = tourDateTime;
@@ -228,7 +228,7 @@ export class OpenAiService {
                                                 }
                                                 await original_this.resmateService.scheduleTour(call.conversation);
                                             } catch (e) {
-                                                console.error("Open AI completion stream: schedule tour error", e);
+                                                console.error("Open AI completion stream: schedule tour error"/*, e*/);
                                                 call.updateSystemPrompt(null, {tour_scheduled: false});
                                                 prompt = "[Apologize to the user because something went wrong scheduling the tour.";
                                             }
@@ -237,7 +237,7 @@ export class OpenAiService {
                                         await original_this.speakPrompt(stream, call, prompt);
                                     } break;
                                     case "talk_to_human": {
-                                        winston.info("Open AI completion stream: TALK TO A HUMAN FUNCTION CALLED")
+                                        console.log("Open AI completion stream: TALK TO A HUMAN FUNCTION CALLED")
                                         let prompt;
                                         if (call.canForwardCall()) {
                                             prompt = "[Tell the user you will forward them to someone at the property now.]";
@@ -276,7 +276,7 @@ export class OpenAiService {
         });
 
         call.onClose(() => {
-            winston.info("Closing Open AI completion stream");
+            console.log("Closing Open AI completion stream");
             stream.end();
         });
 
