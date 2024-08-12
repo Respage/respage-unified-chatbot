@@ -125,7 +125,7 @@ export class RedisService {
         try {
             return this._client.del(key as any);
         } catch (err) {
-            console.error('REDIS SERVICE remove Error'/*, { err }/*);
+            console.error('REDIS SERVICE remove Error'/*, { err }*/);
         }
     }
 
