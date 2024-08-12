@@ -13,16 +13,18 @@ export class VonageGateway {
     constructor(@Inject(forwardRef(() => VoiceService)) private voiceService: VoiceService) {}
 
     afterInit(server) {
-        winston.info("Vonage Websocket Gateway initialized");
+        console.log("Vonage Websocket Gateway initialized");
+        // winston.info("Vonage Websocket Gateway initialized");
     }
 
     handleConnection(client) {
-        winston.info('VonageGateway handleConnection', {client});
+        console.log('VonageGateway handleConnection');
+        // winston.info('VonageGateway handleConnection', {client});
         this.clients.push(client);
     }
 
     handleDisconnect(client) {
-        winston.info('VonageGateway handleDisconnect', {client});
+        // winston.info('VonageGateway handleDisconnect', {client});
         const index = this.clients.indexOf(client);
 
         if (index > -1) {
@@ -33,10 +35,12 @@ export class VonageGateway {
     @SubscribeMessage('websocket:connected')
     async handleMessage(client, payload) {
         try {
-            winston.info('VonageGateway handleMessage websocket:connected', {client, payload});
+            console.log('VonageGateway handleMessage websocket:connected');
+            // winston.info('VonageGateway handleMessage websocket:connected', {client, payload});
             await this.voiceService.startCall(payload.conversation_id, payload.call_id, payload.from_number, payload.to_number, client);
         } catch (e) {
-            winston.error({e})
+            console.log(e);
+            // winston.error({e})
         }
     }
 }

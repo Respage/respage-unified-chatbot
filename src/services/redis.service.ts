@@ -17,7 +17,7 @@ export class RedisService {
         if (this._client) {
             this._client
                 .disconnect()
-                .then(() => winston.info('REDIS SERVICE Client disconnected'))
+                // .then(() => winston.info('REDIS SERVICE Client disconnected'))
                 .catch((err) =>
                     console.error('REDIS SERVICE Error disconnecting client', { err }),
                 );
@@ -30,7 +30,7 @@ export class RedisService {
         });
 
         (this._client as any).on('connect', () => {
-            winston.info('REDIS SERVICE Connected to Redis!');
+            // winston.info('REDIS SERVICE Connected to Redis!');
         });
 
         (this._client as any).on('error', (err) => {
@@ -42,7 +42,7 @@ export class RedisService {
                         err.code,
                     ) > -1)
             ) {
-                winston.info('Server stopped due to redis connection');
+                // winston.info('Server stopped due to redis connection');
                 process.exit(1);
             }
         });
