@@ -57,7 +57,7 @@ export class GoogleService {
                             call.promptAI("Apologize because something has gone wrong, then ask if the user has further questions.");
                         }
                     } catch (e) {
-                        this.logger.error(e);
+                        original_this.logger.error(e);
                         call.promptAI("Apologize because something has gone wrong and ask the user to try again.");
                         callback();
                         return;
