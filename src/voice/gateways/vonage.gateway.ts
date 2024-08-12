@@ -1,8 +1,9 @@
-import winston from "winston";
 import {SubscribeMessage, WebSocketGateway} from "@nestjs/websockets";
 import {RespageWebSocketAdapter} from "../../websocket/custom.adapter";
 import {VoiceService} from "../../services/voice.service";
 import {forwardRef, Inject} from "@nestjs/common";
+import {WINSTON_MODULE_PROVIDER} from "nest-winston";
+import {Logger} from "winston";
 
 export const VONAGE_GATEWAY_PATH = 'websocket/vonage'
 
@@ -10,21 +11,23 @@ export const VONAGE_GATEWAY_PATH = 'websocket/vonage'
 export class VonageGateway {
     clients: RespageWebSocketAdapter[] = [];
 
-    constructor(@Inject(forwardRef(() => VoiceService)) private voiceService: VoiceService) {}
+    constructor(
+        @Inject(forwardRef(() => VoiceService)) private voiceService: VoiceService,
+        @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger
+    ) {}
 
     afterInit(server) {
-        console.log("Vonage Websocket Gateway initialized");
-        // console.log("Vonage Websocket Gateway initialized");
+        this.logger.info("Vonage Websocket Gateway initialized");
     }
 
     handleConnection(client) {
         console.log('VonageGateway handleConnection');
-        // console.log('VonageGateway handleConnection', {client});
+        this.logger.info('VonageGateway handleConnection', {client});
         this.clients.push(client);
     }
 
     handleDisconnect(client) {
-        // console.log('VonageGateway handleDisconnect', {client});
+        this.logger.info('VonageGateway handleDisconnect', {client});
         const index = this.clients.indexOf(client);
 
         if (index > -1) {
@@ -36,11 +39,10 @@ export class VonageGateway {
     async handleMessage(client, payload) {
         try {
             console.log('VonageGateway handleMessage websocket:connected');
-            // console.log('VonageGateway handleMessage websocket:connected', {client, payload});
+            this.logger.info('VonageGateway handleMessage websocket:connected', {client, payload});
             await this.voiceService.startCall(payload.conversation_id, payload.call_id, payload.from_number, payload.to_number, client);
         } catch (e) {
-            console.log(e);
-            // console.error({e})
+            this.logger.error({e})
         }
     }
 }

@@ -1,4 +1,4 @@
-import winston from "winston";
+import winston, {Logger} from "winston";
 import {forwardRef, Inject, Injectable} from '@nestjs/common';
 
 import {SpeechClient} from '@google-cloud/speech';
@@ -9,6 +9,7 @@ import {TextToSpeechClient} from "@google-cloud/text-to-speech";
 import {google} from "@google-cloud/text-to-speech/build/protos/protos";
 import AudioEncoding = google.cloud.texttospeech.v1.AudioEncoding;
 import {OpenAiService} from "./open-ai.service";
+import {WINSTON_MODULE_PROVIDER} from "nest-winston";
 
 @Injectable()
 export class GoogleService {
@@ -16,7 +17,8 @@ export class GoogleService {
     private textToSpeechClient: TextToSpeechClient;
 
     constructor(@Inject(forwardRef(() => VoiceService)) private voiceService: VoiceService,
-                @Inject(forwardRef(() => OpenAiService)) private openAiService: OpenAiService) {
+                @Inject(forwardRef(() => OpenAiService)) private openAiService: OpenAiService,
+                @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger) {
         const credentials = JSON.parse(process.env.GOOGLE_CLOUD_CREDENTIALS);
         this.speechToTextClient = new SpeechClient({credentials});
         this.textToSpeechClient = new TextToSpeechClient({credentials})
@@ -55,7 +57,7 @@ export class GoogleService {
                             call.promptAI("Apologize because something has gone wrong, then ask if the user has further questions.");
                         }
                     } catch (e) {
-                        console.error(e);
+                        this.logger.error(e);
                         call.promptAI("Apologize because something has gone wrong and ask the user to try again.");
                         callback();
                         return;
@@ -83,7 +85,7 @@ export class GoogleService {
                 //         interimResults: false,
                 //     })
                 //     .on('error', e => {
-                //         console.error(e);
+                //         this.logger.error(e);
                 //         transcriptionStream?.end();
                 //         transcriptionStream = null;
                 //     })
@@ -117,7 +119,7 @@ export class GoogleService {
         });
 
         call.onClose(() => {
-            console.log("Closing Google speech to text stream");
+            this.logger.info("Closing Google speech to text stream");
             transcriptionStream?.end()
             stream.end();
         });
@@ -166,7 +168,7 @@ export class GoogleService {
         });
 
         call.onClose(() => {
-            console.log("Closing Google text to speech stream");
+            this.logger.info("Closing Google text to speech stream");
             stream.end();
         });
 

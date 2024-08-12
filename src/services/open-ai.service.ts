@@ -1,4 +1,4 @@
-import winston from "winston";
+import winston, {Logger} from "winston";
 import {ChatHistoryLog, ConversationInfo} from "../models/conversation.model";
 
 if (!process.env.NODE_ENV) {
@@ -19,6 +19,7 @@ import {DateTime} from "luxon";
 import {ElevenLabsService} from "./eleven-labs.service";
 import {FUNCTIONS} from "../models/open-ai-functions.model";
 import {VonageService} from "./vonage.service";
+import {WINSTON_MODULE_PROVIDER} from "nest-winston";
 
 @Injectable()
 export class OpenAiService {
@@ -26,7 +27,8 @@ export class OpenAiService {
 
     constructor(
         @Inject(forwardRef(() => VoiceService)) private voiceService: VoiceService,
-        @Inject(forwardRef(() => ResmateService)) private resmateService: ResmateService) {
+        @Inject(forwardRef(() => ResmateService)) private resmateService: ResmateService,
+        @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger) {
         this.client = new OpenAI({
             apiKey: process.env.OPENAI_API_KEY,
             organization: process.env.OPENAI_ORGANIZATION
@@ -152,13 +154,13 @@ export class OpenAiService {
                                 const params = toolCall.function.arguments;
                                 switch (toolCall.function.name) {
                                     case "schedule_tour": {
-                                        console.log("Open AI completion stream: SCHEDULE TOUR FUNCTION CALLED");
+                                        this.logger.info("Open AI completion stream: SCHEDULE TOUR FUNCTION CALLED");
                                         if (!(
                                             params.time &&
                                             params.day &&
                                             params.month
                                         )) {
-                                            console.log("Open AI completion stream: time, day, month params missing"/*, call.conversation.conversationInfo, params*/);
+                                            this.logger.info("Open AI completion stream: time, day, month params missing", call.conversation.conversationInfo, params);
                                             await original_this.speakPrompt(stream, call, "[Apologize because something has gone wrong and ask the user to try again.]");
                                             break;
                                         }
@@ -197,7 +199,7 @@ export class OpenAiService {
                                             tourDateTime.toFormat('yyyy-LL-dd'),
                                             1
                                         );
-                                        console.log({tourTimes, tourDateTime: tourDateTime.toISO()});
+                                        this.logger.info({tourTimes, tourDateTime: tourDateTime.toISO()});
                                         if (tourTimes.find(t => +DateTime.fromISO(t) === +tourDateTime)) {
                                             if (tourDateTimeConfirmed) {
                                                 conversationInfoUpdate.tour_date_time = tourDateTime;
@@ -228,7 +230,7 @@ export class OpenAiService {
                                                 }
                                                 await original_this.resmateService.scheduleTour(call.conversation);
                                             } catch (e) {
-                                                console.error("Open AI completion stream: schedule tour error"/*, e*/);
+                                                this.logger.error("Open AI completion stream: schedule tour error", e);
                                                 call.updateSystemPrompt(null, {tour_scheduled: false});
                                                 prompt = "[Apologize to the user because something went wrong scheduling the tour.";
                                             }
@@ -237,7 +239,7 @@ export class OpenAiService {
                                         await original_this.speakPrompt(stream, call, prompt);
                                     } break;
                                     case "talk_to_human": {
-                                        console.log("Open AI completion stream: TALK TO A HUMAN FUNCTION CALLED")
+                                        this.logger.info("Open AI completion stream: TALK TO A HUMAN FUNCTION CALLED")
                                         let prompt;
                                         if (call.canForwardCall()) {
                                             prompt = "[Tell the user you will forward them to someone at the property now.]";
@@ -245,7 +247,7 @@ export class OpenAiService {
                                             try {
                                                 await original_this.resmateService.escalateToHumanContact(call, params.reason)
                                             } catch(e) {
-                                                console.error(e);
+                                                this.logger.error(e);
                                             }
                                         } else {
                                             prompt = "[Tell the user you will notify someone at the office and then offer to help them with something else.]";
@@ -253,7 +255,7 @@ export class OpenAiService {
                                             try {
                                                 await original_this.resmateService.escalateToHumanContact(call, params.reason)
                                             } catch(e) {
-                                                console.error(e);
+                                                this.logger.error(e);
                                                 prompt = "[Apologize and tell the user you were unable to contact the office. Ask them if there is any other way you can help.]"
                                             }
                                         }
@@ -276,7 +278,7 @@ export class OpenAiService {
         });
 
         call.onClose(() => {
-            console.log("Closing Open AI completion stream");
+            this.logger.info("Closing Open AI completion stream");
             stream.end();
         });
 

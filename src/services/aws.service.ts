@@ -20,7 +20,7 @@ async function uploadRecording(filename: string, file: Buffer, mimeType = 'audio
     await s3.putObject(params);
 
     return `https://${process.env.AWS_S3_RECORDING_BUCKET}.s3.amazonaws.com/${filename}`
-};
+}
 
 export {
     uploadRecording
