@@ -85,7 +85,10 @@ export class VoiceService {
                     let tour_date_time;
                     if (prospect.tour_reservation) {
                         const reservation = await this.resmateService.getTourReservation(prospect.tour_reservation);
-                        tour_date_time = DateTime.fromISO(reservation.start_time, {zone: info.tour_availability.timezone}).toISO();
+                        const start_time = DateTime.fromISO(reservation.start_time, {zone: info.tour_availability.timezone});
+                        if (+start_time > +DateTime.now()) {
+                            tour_date_time = start_time.toISO();
+                        }
                     }
                     call.updateSystemPrompt(
                         null,
