@@ -79,7 +79,7 @@ export class ResmateService {
                 headers: this.headers
             });
 
-            return response.data.data;
+            return response.data.data || [];
         } catch (e) {
             console.error('getTourDateData error'/*, {e}*/);
             return Promise.resolve(null);
