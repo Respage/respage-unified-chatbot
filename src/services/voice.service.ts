@@ -52,11 +52,10 @@ export class VoiceService {
         }
 
         const campaign_id = voiceInbox.campaign_id;
-
-        const call = new ActiveCall(call_id, conversation_id, campaign_id);
-        this.activeCalls[conversation_id] = call;
-
         const info = await this.redisService.getSystemPromptData(campaign_id);
+
+        const call = new ActiveCall(call_id, conversation_id, campaign_id, info.tour_availability.timezone);
+        this.activeCalls[conversation_id] = call;
 
         info.call_forwarding_number = voiceInbox.call_forwarding_number;
 

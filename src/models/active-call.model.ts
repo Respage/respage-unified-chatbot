@@ -53,7 +53,7 @@ export class ActiveCall {
     private maximumVolume;
     private weightedAvgVolume;
 
-    constructor(id: string, conversation_id: string, campaign_id: number, callMemorySize = 20) {
+    constructor(id: string, conversation_id: string, campaign_id: number, timezone: string, callMemorySize = 20) {
         this.minimumVolume = -1;
         this.maximumVolume = SIGNED_INT_MAX; // maximum absolute value of a signed 16 bit integer
         this.weightedAvgVolume = (this.maximumVolume / 2) + AVG_WEIGHT;
@@ -63,7 +63,7 @@ export class ActiveCall {
 
         this.onCloseCallbacks = [];
 
-        this.conversation = new Conversation(campaign_id, 'voice');
+        this.conversation = new Conversation(campaign_id, 'voice', timezone);
     }
 
     static compileTourDateTime(timezone: string, time: string, day: string, month: string, year?: string) {

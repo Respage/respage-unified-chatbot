@@ -57,6 +57,7 @@ export class Conversation {
     type: ConversationType;
     propertyInfo: PropertyInfo;
     conversationInfo: ConversationInfo;
+    timezone: string;
 
     private systemPrompt: ChatCompletionMessageParam;
 
@@ -67,13 +68,14 @@ export class Conversation {
 
     functions: any[] = [];
 
-    constructor(campaign_id: number, conversationType: ConversationType, callMemorySize = 10) {
+    constructor(campaign_id: number, conversationType: ConversationType, timezone: string, callMemorySize = 10) {
         this.type = conversationType;
         this.campaign_id = campaign_id;
+        this.timezone = timezone;
 
         this.systemPrompt = {
             role: 'system',
-            content: `Today's date is ${(new Date()).toString().split(/\d\d:\d\d:\d\d/)[0].trim()}. ` + process.env.SYSTEM_PROMPT_VOICE
+            content: `Today's date is ${DateTime.local({zone: timezone}).toISODate()}. ` + process.env.SYSTEM_PROMPT_VOICE
         };
 
         this.conversationHistory = [];
