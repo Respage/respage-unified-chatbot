@@ -82,7 +82,22 @@ export class VoiceService {
         this.resmateService.getProspect(campaign_id, from_number)
             .then(async prospect => {
                 if (prospect) {
-                    call.updateSystemPrompt(null, {prospect, first_name: prospect.first_name, last_name: prospect.last_name});
+                    let tour_date_time;
+                    if (prospect.tour_reservation) {
+                        const reservation = await this.resmateService.getTourReservation(prospect.tour_reservation);
+                        tour_date_time = DateTime.fromISO(reservation.start_time, {zone: info.tour_availability.timezone}).toISO();
+                    }
+                    call.updateSystemPrompt(
+                        null,
+                        {
+                            prospect,
+                            first_name: prospect.first_name,
+                            last_name: prospect.last_name,
+                            tour_date_time,
+                            tour_scheduled: !!tour_date_time,
+                            tour_date_time_confirmed: !!tour_date_time
+                        }
+                    );
                     return;
                 }
 

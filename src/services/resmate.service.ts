@@ -97,6 +97,16 @@ export class ResmateService {
         return response.data.data;
     }
 
+    async getTourReservation(reservation_id: string) {
+        const response = await axios({
+            method: "GET",
+            url: `${process.env.RESMATE_API_URL}/private/tour/reservations/${reservation_id}`,
+            headers: this.headers
+        });
+
+        return response.data.data;
+    }
+
     async upsertProspect(campaign_id: number, data: Partial<UpsertProspectParams>) {
         const response = await axios({
             method: "POST",
