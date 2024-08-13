@@ -100,7 +100,7 @@ export class ResmateService {
     async getTourReservation(reservation_id: string) {
         const response = await axios({
             method: "GET",
-            url: `${process.env.RESMATE_API_URL}/private/tour/reservations/${reservation_id}`,
+            url: `${process.env.RESMATE_API_URL}/private/tour/${reservation_id}`,
             headers: this.headers
         });
 
