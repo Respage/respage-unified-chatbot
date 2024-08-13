@@ -90,6 +90,9 @@ export class VoiceService {
                             tour_date_time = start_time.toISO();
                         }
                     }
+
+                    const communicationConsent = await this.resmateService.getCommunicationConsent(call.conversation.conversationInfo.phone, campaign_id, 'sms')
+
                     call.updateSystemPrompt(
                         null,
                         {
@@ -98,7 +101,8 @@ export class VoiceService {
                             last_name: prospect.last_name,
                             tour_date_time,
                             tour_scheduled: !!tour_date_time,
-                            tour_date_time_confirmed: !!tour_date_time
+                            tour_date_time_confirmed: !!tour_date_time,
+                            sms_consent: communicationConsent
                         }
                     );
                     return;

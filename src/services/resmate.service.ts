@@ -107,6 +107,16 @@ export class ResmateService {
         return response.data.data;
     }
 
+    async getCommunicationConsent(contact: string, campaign_id: number, channel: string) {
+        const response = await axios({
+            method: "GET",
+            url: `${process.env.RESMATE_API_URL}/private/communication-consent/${channel}/${campaign_id}/${contact}`,
+            headers: this.headers
+        });
+
+        return !!(response.data?.data?.active && response.data?.data?.status === 'opted_in');
+    }
+
     async upsertProspect(campaign_id: number, data: Partial<UpsertProspectParams>) {
         const response = await axios({
             method: "POST",
