@@ -61,17 +61,19 @@ export class VoiceService {
 
         const tourTimeBuffer = info?.tour_availability?.closest_possible_tour_available_in_hours || 24;
 
-        const earliestDateTime = DateTime.now().plus({hours: tourTimeBuffer});
+        const nowDateTime = DateTime.local({zone: info.tour_availability.timezone});
+
+        const earliestDateTime = nowDateTime.plus({hours: tourTimeBuffer});
         this.resmateService.getTourTimes(campaign_id, earliestDateTime.toFormat('yyyy-LL-dd'), 6)
             .then((available_tour_times: string[]) => {
                 if (available_tour_times?.length) {
-                    available_tour_times = available_tour_times.filter(x => DateTime.fromISO(x) > earliestDateTime)
+                    available_tour_times = available_tour_times.filter(x => DateTime.fromISO(x, {zone: info.tour_availability.timezone}) > earliestDateTime)
                     call.updateSystemPrompt({available_tour_times});
                 }
             })
             .catch(e => this.logger.error({e}));
 
-        this.resmateService.isDuringOfficeHours(campaign_id)
+        this.resmateService.isDuringOfficeHours(campaign_id, )
             .then((is_during_office_hours) => {
                 call.updateSystemPrompt(null, {is_during_office_hours});
             })
@@ -115,7 +117,7 @@ export class VoiceService {
                 const user_info: any = await this.openAIService.getFunctionResults(call, "collect_user_info");
 
                 if (user_info.move_in_month) {
-                    user_info.move_in_date = ActiveCall.compileTourDateTime(null, user_info.move_in_day, user_info.move_in_month, user_info.move_in_year);
+                    user_info.move_in_date = ActiveCall.compileTourDateTime(call.conversation.timezone, user_info.move_in_day, user_info.move_in_month, user_info.move_in_year);
                 }
 
                 const conversation = await this.resmateService.addConversation(call);
