@@ -176,6 +176,8 @@ export class VoiceService {
                 this.logger.error({e});
             }
         });
+
+        this.logger.info("VoiceService startCall call started", {call});
     }
 
     async forwardCall(call: ActiveCall) {
