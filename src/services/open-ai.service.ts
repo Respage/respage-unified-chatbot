@@ -153,6 +153,37 @@ export class OpenAiService {
                             for (const toolCall of toolCalls) {
                                 const params = toolCall.function.arguments;
                                 switch (toolCall.function.name) {
+                                    case "tour_time_lookup": {
+                                        let tourDateTime = ActiveCall.compileTourDateTime(
+                                            call.conversation.propertyInfo.tour_availability.timezone,
+                                            params.time,
+                                            params.day,
+                                            params.month,
+                                            params.year
+                                        );
+
+                                        if (!tourDateTime) {
+                                            await original_this.speakPrompt(stream, call, "[Apologize and ask the user what day they are interested in for a tour.]");
+                                        }
+
+                                        const tourTimes = await original_this.resmateService.getTourTimes(
+                                            call.conversation.campaign_id,
+                                            tourDateTime.toFormat('yyyy-LL-dd'),
+                                            1
+                                        );
+
+                                        call.updateSystemPrompt(
+                                            null,
+                                            {
+                                                available_tour_times: [
+                                                    ...call.conversation.conversationInfo.available_tour_times,
+                                                    ...tourTimes
+                                                ]
+                                            }
+                                        );
+
+                                        await original_this.speakPrompt(stream, call, "[Offer tour times for requested date, or ask the user to choose another day if times are unavailable.]");
+                                    } break;
                                     case "schedule_tour": {
                                         original_this.logger.info("OpenAiService completionStream LLM function schedule_tour", { call, params });
 

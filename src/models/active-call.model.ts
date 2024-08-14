@@ -4,7 +4,7 @@ import winston from "winston";
 import {VoiceService} from "../services/voice.service";
 import {ChatHistoryLog, Conversation, ConversationInfo, PropertyInfo} from "./conversation.model";
 import {DateTime} from "luxon";
-import {FUNC_SCHEDULE_TOUR, FUNC_TALK_TO_HUMAN} from "./open-ai-functions.model";
+import {FUNC_LOOKUP_TOUR_TIMES, FUNC_SCHEDULE_TOUR, FUNC_TALK_TO_HUMAN} from "./open-ai-functions.model";
 import {OpenAiService} from "../services/open-ai.service";
 const {pipeline} = nodeStreamPromises;
 
@@ -66,8 +66,8 @@ export class ActiveCall {
         this.conversation = new Conversation(campaign_id, 'voice', timezone);
     }
 
-    static compileTourDateTime(timezone: string, time: string, day: string, month: string, year?: string) {
-        if (!(time && day && month)) {
+    static compileTourDateTime(timezone: string, time?: string, day?: string, month?: string, year?: string) {
+        if (!(day && month)) {
             return null;
         }
 
@@ -85,7 +85,7 @@ export class ActiveCall {
         const original_this = this;
 
         this.updateSystemPrompt(systemPrompData.property, systemPrompData.conversation);
-        this.conversation.functions = [FUNC_SCHEDULE_TOUR, FUNC_TALK_TO_HUMAN];
+        this.conversation.functions = [FUNC_SCHEDULE_TOUR, FUNC_LOOKUP_TOUR_TIMES, FUNC_TALK_TO_HUMAN];
 
         let streamStart = 0;
         let audioLength = 0;

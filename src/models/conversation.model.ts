@@ -41,6 +41,7 @@ export interface ConversationInfo {
     unit_type?: string;
     interests?: string[];
     is_during_office_hours?: boolean;
+    available_tour_times?: any[];
 }
 
 export type ChatHistoryLog = ChatCompletionMessageParam & { timestamp?: Date };
