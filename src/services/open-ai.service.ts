@@ -172,15 +172,12 @@ export class OpenAiService {
                                             1
                                         );
 
-                                        call.updateSystemPrompt(
-                                            null,
-                                            {
-                                                available_tour_times: [
-                                                    ...(call.conversation.conversationInfo.available_tour_times || []),
-                                                    ...tourTimes
-                                                ]
-                                            }
-                                        );
+                                        call.updateSystemPrompt({
+                                            available_tour_times: [
+                                                ...(call.conversation.propertyInfo.available_tour_times || []),
+                                                ...tourTimes
+                                            ]
+                                        });
 
                                         await original_this.speakPrompt(stream, call, "[Offer tour times for requested date, or ask the user to choose another day if times are unavailable.]");
                                     } break;
