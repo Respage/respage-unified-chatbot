@@ -81,7 +81,7 @@ export class ActiveCall {
          openAiService: OpenAiService,
          voiceService: VoiceService,
     ) {
-        console.log('ActiveCall init'/*, {call: this}*/);
+        winston.info('ActiveCall init', {call: this});
         const original_this = this;
 
         this.updateSystemPrompt(systemPrompData.property, systemPrompData.conversation);

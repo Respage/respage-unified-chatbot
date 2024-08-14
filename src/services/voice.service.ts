@@ -121,7 +121,7 @@ export class VoiceService {
 
                 call.updateSystemPrompt(null, {prospect, first_name: prospect.first_name, last_name: prospect.last_name});
             })
-            .catch(e => this.logger.error({e}));
+            .catch(e => this.logger.error("VoiceService startCall", {call, e}));
 
         call.init(
             callSocket,
