@@ -176,7 +176,7 @@ export class OpenAiService {
                                             null,
                                             {
                                                 available_tour_times: [
-                                                    ...call.conversation.conversationInfo.available_tour_times,
+                                                    ...(call.conversation.conversationInfo.available_tour_times || []),
                                                     ...tourTimes
                                                 ]
                                             }
