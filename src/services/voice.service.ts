@@ -69,6 +69,7 @@ export class VoiceService {
                 if (available_tour_times?.length) {
                     available_tour_times = available_tour_times.filter(x => DateTime.fromISO(x, {zone: info.tour_availability.timezone}) > earliestDateTime)
                     call.updateSystemPrompt({available_tour_times});
+                    this.logger.info("VoiceService startCall getTourTimes available times added", {call});
                 }
             })
             .catch(e => this.logger.error({e}));
@@ -76,6 +77,7 @@ export class VoiceService {
         this.resmateService.isDuringOfficeHours(campaign_id, )
             .then((is_during_office_hours) => {
                 call.updateSystemPrompt(null, {is_during_office_hours});
+                this.logger.info("VoiceService startCall getTourTimes isDuringOfficeHours", {call});
             })
             .catch(e => this.logger.error({e}));
 
@@ -116,6 +118,8 @@ export class VoiceService {
                             sms_consent: communicationConsent
                         }
                     );
+
+                    this.logger.info("VoiceService startCall getTourTimes getProspect existing prospect", {call});
                     return;
                 }
 
@@ -129,6 +133,8 @@ export class VoiceService {
                 });
 
                 call.updateSystemPrompt(null, {prospect, first_name: prospect.first_name, last_name: prospect.last_name});
+
+                this.logger.info("VoiceService startCall getTourTimes getProspect new prospect", {call});
             })
             .catch(e => this.logger.error("VoiceService startCall", {call, e}));
 
