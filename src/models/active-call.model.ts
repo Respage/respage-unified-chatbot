@@ -1,6 +1,5 @@
 import {WebSocket} from "ws";
 import {Duplex, promises as nodeStreamPromises} from "stream";
-import winston from "winston";
 import {VoiceService} from "../services/voice.service";
 import {ChatHistoryLog, Conversation, ConversationInfo, PropertyInfo} from "./conversation.model";
 import {DateTime} from "luxon";
@@ -81,7 +80,7 @@ export class ActiveCall {
          openAiService: OpenAiService,
          voiceService: VoiceService,
     ) {
-        winston.info('ActiveCall init', {call: this});
+        console.log('ActiveCall init'/*, {call: this}*/);
         const original_this = this;
 
         this.updateSystemPrompt(systemPrompData.property, systemPrompData.conversation);
