@@ -121,7 +121,7 @@ export class ActiveCall {
 
                     audioLength += (chunk.length / 640) * 20;
 
-                    for (let i = 0; i < chunk.length; i+= 640) {
+                    for (let i = 0; i + 640 < chunk.length; i += 640) {
                         let subArray = chunk.subarray(i, i + 640);
                         websocket.send(subArray);
                         await (new Promise(resolve => setTimeout(resolve, 18)))
