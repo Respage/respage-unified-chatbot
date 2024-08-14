@@ -93,7 +93,7 @@ export class VoiceService {
                         }
                     }
 
-                    const communicationConsent = await this.resmateService.getCommunicationConsent(call.conversation.conversationInfo.phone, campaign_id, 'sms')
+                    const communicationConsent = await this.resmateService.getCommunicationConsent(from_number, campaign_id, 'sms');
 
                     call.updateSystemPrompt(
                         null,
