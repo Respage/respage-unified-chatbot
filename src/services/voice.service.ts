@@ -84,16 +84,25 @@ export class VoiceService {
                 if (prospect) {
                     let tour_date_time;
                     if (prospect.tour_reservation) {
-                        const reservation = await this.resmateService.getTourReservation(prospect.tour_reservation);
-                        if (reservation) {
-                            const start_time = DateTime.fromISO(reservation.start_time, {zone: info.tour_availability.timezone});
-                            if (+start_time > +DateTime.now()) {
-                                tour_date_time = start_time.toISO();
+                        try {
+                            const reservation = await this.resmateService.getTourReservation(prospect.tour_reservation);
+                            if (reservation) {
+                                const start_time = DateTime.fromISO(reservation.start_time, {zone: info.tour_availability.timezone});
+                                if (+start_time > +DateTime.now()) {
+                                    tour_date_time = start_time.toISO();
+                                }
                             }
+                        } catch (e) {
+                            this.logger.error("VoiceService startCall getProspect getTourReservation", {e});
                         }
                     }
 
-                    const communicationConsent = await this.resmateService.getCommunicationConsent(from_number, campaign_id, 'sms');
+                    let communicationConsent;
+                    try {
+                        communicationConsent = await this.resmateService.getCommunicationConsent(from_number, campaign_id, 'sms');
+                    } catch (e) {
+                        this.logger.error("VoiceService startCall getProspect getCommunicationConsent", {e});
+                    }
 
                     call.updateSystemPrompt(
                         null,
