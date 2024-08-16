@@ -175,11 +175,11 @@ export class OpenAiService {
                                         call.updateSystemPrompt({
                                             available_tour_times: [
                                                 ...(call.conversation.propertyInfo.available_tour_times || []),
-                                                ...availableTimes
+                                                ...(availableTimes || [])
                                             ],
                                             blocked_tour_times: [
                                                 ...(call.conversation.propertyInfo.blocked_tour_times || []),
-                                                ...blockedTimes
+                                                ...(blockedTimes || [])
                                             ]
                                         });
 
@@ -241,7 +241,7 @@ export class OpenAiService {
 
                                         original_this.logger.info("OpenAiService completionStream LLM function schedule_tour", {call, availableTimes, tourDateTime: tourDateTime.toISO()});
 
-                                        if (availableTimes.find(t => +DateTime.fromISO(t, {zone: call.conversation.timezone}) === +tourDateTime)) {
+                                        if (availableTimes?.find(t => +DateTime.fromISO(t, {zone: call.conversation.timezone}) === +tourDateTime)) {
                                             if (tourDateTimeConfirmed) {
                                                 conversationInfoUpdate.tour_date_time = tourDateTime;
                                                 conversationInfoUpdate.tour_scheduled = true;
