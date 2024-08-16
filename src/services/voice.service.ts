@@ -65,10 +65,19 @@ export class VoiceService {
 
         const earliestDateTime = nowDateTime.plus({hours: tourTimeBuffer});
         this.resmateService.getTourTimes(campaign_id, earliestDateTime.toFormat('yyyy-LL-dd'), 6)
-            .then((available_tour_times: string[]) => {
-                if (available_tour_times?.length) {
-                    available_tour_times = available_tour_times.filter(x => DateTime.fromISO(x, {zone: info.tour_availability.timezone}) > earliestDateTime)
-                    call.updateSystemPrompt({available_tour_times});
+            .then(({availableTimes, blockedTimes}) => {
+                const update: { available_tour_times?: string[], blocked_tour_times?: string[] } = {};
+
+                if (availableTimes?.length) {
+                    update.available_tour_times = availableTimes.filter(x => DateTime.fromISO(x, {zone: info.tour_availability.timezone}) > earliestDateTime)
+                }
+
+                if (blockedTimes?.length) {
+                    update.blocked_tour_times = blockedTimes;
+                }
+
+                if (update.available_tour_times || update.blocked_tour_times) {
+                    call.updateSystemPrompt(update);
                     this.logger.info("VoiceService startCall getTourTimes available times added", {call});
                 }
             })

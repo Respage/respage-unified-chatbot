@@ -151,7 +151,7 @@ export class OpenAiService {
 
                         if (toolCalls.length) {
                             for (const toolCall of toolCalls) {
-                                const params = toolCall.function.arguments;
+                                const params: any = toolCall.function.arguments;
                                 switch (toolCall.function.name) {
                                     case "tour_time_lookup": {
                                         let tourDateTime = ActiveCall.compileTourDateTime(
@@ -166,7 +166,7 @@ export class OpenAiService {
                                             await original_this.speakPrompt(stream, call, "[Apologize and ask the user what day they are interested in for a tour.]");
                                         }
 
-                                        const tourTimes = await original_this.resmateService.getTourTimes(
+                                        const {availableTimes, blockedTimes} = await original_this.resmateService.getTourTimes(
                                             call.conversation.campaign_id,
                                             tourDateTime.toFormat('yyyy-LL-dd'),
                                             1
@@ -175,7 +175,11 @@ export class OpenAiService {
                                         call.updateSystemPrompt({
                                             available_tour_times: [
                                                 ...(call.conversation.propertyInfo.available_tour_times || []),
-                                                ...tourTimes
+                                                ...availableTimes
+                                            ],
+                                            blocked_tour_times: [
+                                                ...(call.conversation.propertyInfo.blocked_tour_times || []),
+                                                ...blockedTimes
                                             ]
                                         });
 
@@ -207,7 +211,7 @@ export class OpenAiService {
 
                                         let prompt = '';
                                         let conversationInfoUpdate: ConversationInfo = {
-                                            sms_consent: params.consent_to_sms
+                                            sms_consent: !!params.consent_to_sms || call.conversation.conversationInfo.sms_consent
                                         };
 
                                         if (params.move_in_month) {

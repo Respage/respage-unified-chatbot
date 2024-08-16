@@ -70,7 +70,7 @@ export class ResmateService {
         return response.data.data;
     }
 
-    async getTourTimes(campaign_id: number, start_date: string, max_count: number): Promise<string[]> {
+    async getTourTimes(campaign_id: number, start_date: string, max_count: number): Promise<{availableTimes: string[], blockedTimes: string[]}> {
         try {
             const response = await axios({
                 url: `${process.env.RESMATE_API_URL}/tour/tour-times`,
@@ -79,7 +79,7 @@ export class ResmateService {
                 headers: this.headers
             });
 
-            return response.data.data || [];
+            return response.data.data || {availableTimes: [], blockedTimes: []};
         } catch (e) {
             console.error('getTourDateData error'/*, {e}*/);
             return Promise.resolve(null);
