@@ -233,7 +233,7 @@ export class OpenAiService {
                                             params.year
                                         );
 
-                                        const tourTimes = await original_this.resmateService.getTourTimes(
+                                        const {availableTimes} = await original_this.resmateService.getTourTimes(
                                             call.conversation.campaign_id,
                                             tourDateTime.toFormat('yyyy-LL-dd'),
                                             1
@@ -241,7 +241,7 @@ export class OpenAiService {
 
                                         original_this.logger.info("OpenAiService completionStream LLM function schedule_tour", {call, tourTimes, tourDateTime: tourDateTime.toISO()});
 
-                                        if (tourTimes.find(t => +DateTime.fromISO(t, {zone: call.conversation.timezone}) === +tourDateTime)) {
+                                        if (availableTimes.find(t => +DateTime.fromISO(t, {zone: call.conversation.timezone}) === +tourDateTime)) {
                                             if (tourDateTimeConfirmed) {
                                                 conversationInfoUpdate.tour_date_time = tourDateTime;
                                                 conversationInfoUpdate.tour_scheduled = true;
