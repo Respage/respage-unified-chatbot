@@ -69,10 +69,11 @@ export class VoiceController {
         this.logger.info('REQUEST TO /recording', req.body);
         try {
             const { filename, file } = await this.vonageService.getConversationAudioFile(req.body.recording_url);
-
+            this.logger.info('/recording getConversationAudioFile', { filename });
             const recording_url = await uploadRecording(filename, file);
-            await this.resmateService.updateConversation(req.body.conversation_uuid, { recording_url });
-
+            this.logger.info('/recording uploadRecording', { recording_url });
+            const result = await this.resmateService.updateConversation(req.body.conversation_uuid, { recording_url });
+            this.logger.info('/recording updateConversation', { result });
         } catch (e) {
             this.logger.error(e);
         }
