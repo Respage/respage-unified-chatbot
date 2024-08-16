@@ -13,7 +13,7 @@ export const FUNC_SCHEDULE_TOUR = {
             tour_confirmed: {type: "boolean", description: "Set to true if tour date and time have been confirmed by the user."},
             first_name: {type: "string", description: "User's first name"},
             last_name: {type: "string", description: "User's last name"},
-            consent_to_sms: {type: "boolean", description: "Set to true if user consented to SMS communications."},
+            consent_to_sms: {type: "boolean", description: "Set to true if user consented to SMS communications. OPTIONAL."},
             move_in_day: {type: "string", description: "Calendar day the user would like to move in."},
             move_in_month: {type: "string", description: "Month the user would like to move in. Valid values: January, February, March, April, May, June, July, August, September, October, November, December."},
             move_in_year: {type: "string", description: "Year the user would like to move in. Default: Current Year."},
