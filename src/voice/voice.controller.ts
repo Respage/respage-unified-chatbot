@@ -72,7 +72,20 @@ export class VoiceController {
             this.logger.info('/recording getConversationAudioFile', { filename });
             const recording_url = await uploadRecording(filename, file);
             this.logger.info('/recording uploadRecording', { recording_url });
-            const result = await this.resmateService.updateConversation(req.body.conversation_uuid, { recording_url });
+
+            let result;
+            let attempts = 0;
+            while (!result && attempts < 5) {
+                await new Promise(resolve => setTimeout(resolve, 5000));
+                result = await this.resmateService.updateConversation(req.body.conversation_uuid, { recording_url });
+                attempts++;
+            }
+
+            if (!result) {
+                this.logger.info('/recording updateConversation failed to add recording_url after 5 attempts.', {result});
+                return;
+            }
+
             this.logger.info('/recording updateConversation', { result });
         } catch (e) {
             this.logger.error(e);
