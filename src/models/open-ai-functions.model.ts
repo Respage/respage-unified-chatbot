@@ -2,7 +2,7 @@ import {DateTime} from "luxon";
 
 export const FUNC_SCHEDULE_TOUR = {
     name: "schedule_tour",
-    description: "User wishes to schedule a tour of the property",
+    description: "Schedule a tour of the property.",
     parameters: {
         type: "object",
         properties: {
@@ -23,7 +23,7 @@ export const FUNC_SCHEDULE_TOUR = {
 
 export const FUNC_LOOKUP_TOUR_TIMES = {
     name: "tour_time_lookup",
-    description: "Check if tour times are available on a specific day or at a specific time when that data is not available.",
+    description: "Look up available tour times on a specific day for which data is not currently available.",
     parameters: {
         type: "object",
         properties: {
@@ -55,7 +55,7 @@ export const FUNC_COLLECT_USER_INFO = {
 
 export const FUNC_TALK_TO_HUMAN = {
     name: "talk_to_human",
-    description: "The user is getting overly frustrated, or wishes to speak to a human being.",
+    description: "Connect The user with a human being because they are getting overly frustrated, or wish to speak to a human being.",
     parameters: {
         type: "object",
         properties: {

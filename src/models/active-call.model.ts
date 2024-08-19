@@ -12,7 +12,7 @@ const SAMPLE_SIZE_BYTES = 640; // How many bytes in a single sample?
 const BYTES_PER_SAMPLE = 2;
 const SIGNED_INT_MAX = 32768;
 
-const START_TALKING_THRESHOLD = 12.5; // How many samples must be consistently above the threshold? 50 = 1 second
+const START_TALKING_THRESHOLD = 5; // How many samples must be consistently above the threshold? 50 = 1 second
 const STOP_TALKING_THRESHOLD = 50; // How many samples must be consistently below the threshold? 50 = 1 second
 const AVG_WEIGHT = 24000;
 
