@@ -186,28 +186,33 @@ export class OpenAiService {
             }
         },
         talk_to_human: async (stream, call: ActiveCall, params: {reason: string}) => {
-            this.logger.info("OpenAiService completionStream LLM function talk_to_human", {call, params});
-            let prompt;
-            if (call.canForwardCall()) {
-                prompt = "[Tell the user you will forward them to someone at the property now.]";
-                call.forward()
-                try {
-                    await this.resmateService.escalateToHumanContact(call, params.reason)
-                } catch(e) {
-                    this.logger.error({e});
-                }
-            } else {
-                prompt = "[Tell the user you will notify someone at the office and then offer to help them with something else.]";
+            try {
+                this.logger.info("OpenAiService completionStream LLM function talk_to_human", {call, params});
+                let prompt;
+                if (call.canForwardCall()) {
+                    prompt = "[Tell the user you will forward them to someone at the property now.]";
+                    call.forward()
+                    try {
+                        await this.resmateService.escalateToHumanContact(call, params.reason)
+                    } catch(e) {
+                        this.logger.error({e});
+                    }
+                } else {
+                    prompt = "[Tell the user you will notify someone at the office and then offer to help them with something else.]";
 
-                try {
-                    await this.resmateService.escalateToHumanContact(call, params.reason)
-                } catch(e) {
-                    this.logger.error({e});
-                    prompt = "[Apologize and tell the user you were unable to contact the office. Ask them if there is any other way you can help.]"
+                    try {
+                        await this.resmateService.escalateToHumanContact(call, params.reason)
+                    } catch(e) {
+                        this.logger.error({e});
+                        prompt = "[Apologize and tell the user you were unable to contact the office. Ask them if there is any other way you can help.]"
+                    }
                 }
+
+                await this.speakPrompt(stream, call, prompt);
+            } catch (e) {
+                this.logger.error({e});
+                await this.speakPrompt(stream, call,"[Apologize and tell the user that something went wrong. Ask them to try again or ask about something else.]");
             }
-
-            await this.speakPrompt(stream, call, prompt);
         }
     };
 
