@@ -3,7 +3,10 @@ import {Duplex, promises as nodeStreamPromises} from "stream";
 import {VoiceService} from "../services/voice.service";
 import {ChatHistoryLog, Conversation, ConversationInfo, PropertyInfo} from "./conversation.model";
 import {DateTime} from "luxon";
-import {FUNC_LOOKUP_TOUR_TIMES, FUNC_SCHEDULE_TOUR, FUNC_TALK_TO_HUMAN} from "./open-ai-functions.model";
+import {
+    TALK_TO_HUMAN_FUNCTION,
+    SCHEDULE_TOUR_FUNCTION
+} from "./open-ai-functions.model";
 import {OpenAiService} from "../services/open-ai.service";
 const {pipeline} = nodeStreamPromises;
 
@@ -65,12 +68,21 @@ export class ActiveCall {
         this.conversation = new Conversation(campaign_id, 'voice', timezone);
     }
 
-    static compileTourDateTime(timezone: string, time?: string, day?: string, month?: string, year?: string) {
+    static compileTourDateTime(timezone: string, day?: string | number, month?: string | number, year?: string | number, time?: string) {
         if (!(day && month)) {
             return null;
         }
 
-        return DateTime.fromFormat(`${time || '00:00'} ${day || 1} ${month} ${year || DateTime.now().year}`, "HH:mm d MMMM yyyy", {zone: timezone});
+        if (typeof day === 'number' && day < 10) {
+            day = '0' + day;
+        }
+
+        if (typeof month === 'number' && month < 10) {
+            month = '0' + month;
+        }
+
+        const dateTime = DateTime.fromFormat(`${time || '00:00'} ${day || 1} ${month} ${year || DateTime.now().year}`, "HH:mm d MMMM yyyy", {zone: timezone});
+        return dateTime.isValid ? dateTime : null;
     }
 
     init(websocket: WebSocket,
@@ -84,7 +96,7 @@ export class ActiveCall {
         const original_this = this;
 
         this.updateSystemPrompt(systemPrompData.property, systemPrompData.conversation);
-        this.conversation.functions = [FUNC_SCHEDULE_TOUR, FUNC_LOOKUP_TOUR_TIMES, FUNC_TALK_TO_HUMAN];
+        this.conversation.functions = [SCHEDULE_TOUR_FUNCTION, TALK_TO_HUMAN_FUNCTION];
 
         let streamStart = 0;
         let audioLength = 0;
@@ -341,6 +353,10 @@ export class ActiveCall {
         return this.conversation.conversationInfo?.tour_scheduled;
     }
 
+    tourDateTimeConfirmed() {
+        return this.conversation.conversationInfo?.tour_date_time_confirmed;
+    }
+
     canForwardCall() {
         return this.conversation.propertyInfo.call_forwarding_number && this.conversation.conversationInfo.is_during_office_hours;
     }
@@ -359,6 +375,78 @@ export class ActiveCall {
 
     updateSystemPrompt(propertyInfoUpdate?: PropertyInfo, conversationInfoUpdate?: ConversationInfo) {
         this.conversation.updateSystemPrompt(propertyInfoUpdate, conversationInfoUpdate);
+    }
+
+    checkTourDateAvailable(date: DateTime) {
+        return !!(this.conversation.propertyInfo.some_available_tour_times || [])
+            .find(a => DateTime.fromISO(a).toISODate() === date.toISODate());
+    }
+
+    checkTourTimeAvailable(time: DateTime) {
+        return !(this.conversation.propertyInfo.blocked_tour_times || [])
+            .find(b => +DateTime.fromISO(b) === +time) &&
+        !!(this.conversation.propertyInfo.some_available_tour_times || [])
+            .find(a => +DateTime.fromISO(a) === +time);
+    }
+
+    getAvailableTourTimes() {
+        return this.conversation.propertyInfo.some_available_tour_times || [];
+    }
+
+    updatedAvailableTourTimes(times: string[], dayToUpdate?: string) {  // dayToUpdate like '2024-04-04'
+        if (!this.conversation.propertyInfo.some_available_tour_times?.length) {
+            return times;
+        }
+
+        if (!dayToUpdate) {
+            return [
+                ...this.conversation.propertyInfo.some_available_tour_times,
+                ...times
+            ];
+        }
+
+        return [
+            ...this.conversation.propertyInfo.some_available_tour_times.filter(t => t.split('T')[0] !== dayToUpdate),
+            ...times
+        ];
+    }
+
+    getBlockedTourTimes() {
+        return this.conversation.propertyInfo.blocked_tour_times || [];
+    }
+
+    updatedBlockedTourTimes(times: string[], dayToUpdate?: string) {  // dayToUpdate like '2024-04-04'
+        if (!this.conversation.propertyInfo.blocked_tour_times?.length) {
+            return times;
+        }
+
+        if (!dayToUpdate) {
+            return [
+                ...this.conversation.propertyInfo.blocked_tour_times,
+                ...times
+            ];
+        }
+
+        return [
+            ...this.conversation.propertyInfo.blocked_tour_times.filter(t => t.split('T')[0] !== dayToUpdate),
+            ...times
+        ];
+    }
+
+    getSMSConsent() {
+        return !!this.conversation.conversationInfo.sms_consent;
+    }
+
+    getTourDate() {
+        return this.conversation.conversationInfo.tour_date;
+    }
+
+    getTourTime() {
+        return this.conversation.conversationInfo.tour_time;
+    }
+
+    getTimezone() {
+        return this.conversation.propertyInfo.tour_availability.timezone;
     }
 
     // Internal methods

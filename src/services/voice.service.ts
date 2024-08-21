@@ -11,6 +11,7 @@ import {RedisService} from "./redis.service";
 import {ResmateService} from "./resmate.service";
 import {VonageService} from "./vonage.service";
 import {WINSTON_MODULE_PROVIDER} from "nest-winston";
+import {COLLECT_USER_INFO_FUNCTION} from "../models/open-ai-functions.model";
 
 @Injectable()
 export class VoiceService {
@@ -66,17 +67,17 @@ export class VoiceService {
         const earliestDateTime = nowDateTime.plus({hours: tourTimeBuffer});
         this.resmateService.getTourTimes(campaign_id, earliestDateTime.toFormat('yyyy-LL-dd'), 6)
             .then(({availableTimes, blockedTimes}) => {
-                const update: { available_tour_times?: string[], blocked_tour_times?: string[] } = {};
+                const update: { some_available_tour_times?: string[], blocked_tour_times?: string[] } = {};
 
                 if (availableTimes?.length) {
-                    update.available_tour_times = availableTimes.filter(x => DateTime.fromISO(x, {zone: info.tour_availability.timezone}) > earliestDateTime)
+                    update.some_available_tour_times = availableTimes.filter(x => DateTime.fromISO(x, {zone: info.tour_availability.timezone}) > earliestDateTime)
                 }
 
                 if (blockedTimes?.length) {
                     update.blocked_tour_times = blockedTimes;
                 }
 
-                if (update.available_tour_times || update.blocked_tour_times) {
+                if (update.some_available_tour_times || update.blocked_tour_times) {
                     call.updateSystemPrompt(update);
                     this.logger.info("VoiceService startCall getTourTimes available times added", {call});
                 }
@@ -162,7 +163,7 @@ export class VoiceService {
 
         call.onClose(async () => {
             try {
-                const user_info: any = await this.openAIService.getFunctionResults(call, "collect_user_info");
+                const user_info: any = await this.openAIService.getFunctionResults(call, COLLECT_USER_INFO_FUNCTION, "collect_user_info");
 
                 if (user_info.move_in_month) {
                     user_info.move_in_date = ActiveCall.compileTourDateTime(call.conversation.timezone, user_info.move_in_day, user_info.move_in_month, user_info.move_in_year);

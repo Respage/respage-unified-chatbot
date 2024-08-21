@@ -13,7 +13,7 @@ export interface PropertyInfo {
     physical_address?: string;
     email_address?: string;
     phone_number?: string;
-    available_tour_times?: string [];
+    some_available_tour_times?: string [];
     blocked_tour_times?: string[];
     call_forwarding_number?: string,
     tour_availability?: {
@@ -35,6 +35,8 @@ export interface ConversationInfo {
     sms_consent?: boolean;
     tour_scheduled?: boolean;
     tour_date_time_confirmed?: boolean;
+    tour_date?: DateTime;
+    tour_time?: string;
     tour_date_time?: DateTime;
     prospect?: any;
     reservation_id?: string;

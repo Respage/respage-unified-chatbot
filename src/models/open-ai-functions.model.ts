@@ -1,41 +1,20 @@
-import {DateTime} from "luxon";
-
-export const FUNC_SCHEDULE_TOUR = {
-    name: "schedule_tour",
-    description: "Schedule a tour of the property.",
+const SCHEDULE_TOUR_FUNCTION = {
+    name: "collect_tour_information",
+    description: "Called whenever new information about a tour request is provided.",
     parameters: {
         type: "object",
         properties: {
-            year: {type: "string", description: "Year of the tour. Default: Current Year."},
-            month: {type: "string", description: "Month of the tour. REQUIRED. Valid values: January, February, March, April, May, June, July, August, September, October, November, December."},
-            day: {type: "string", description: "Calendar day of the tour. REQUIRED."},
-            time: {type: "string", description: "Time of the tour in military time. REQUIRED."},
-            tour_confirmed: {type: "boolean", description: "Set to true if tour date and time have been confirmed by the user."},
-            first_name: {type: "string", description: "User's first name"},
-            last_name: {type: "string", description: "User's last name"},
-            consent_to_sms: {type: "boolean", description: "Set to true if user consented to SMS communications. OPTIONAL."},
-            move_in_day: {type: "string", description: "Calendar day the user would like to move in."},
-            move_in_month: {type: "string", description: "Month the user would like to move in. Valid values: January, February, March, April, May, June, July, August, September, October, November, December."},
-            move_in_year: {type: "string", description: "Year the user would like to move in. Default: Current Year."},
+            year: {type: "string", description: "Year of the tour. Default: Current Year. OPTIONAL."},
+            month: {type: "string", description: "Month of the tour. Valid values: January, February, March, April, May, June, July, August, September, October, November, December. OPTIONAL."},
+            day: {type: "string", description: "Calendar day of the tour. OPTIONAL."},
+            time: {type: "string", description: "Time of the tour in military time. OPTIONAL."},
+            consent_to_sms: {type: "boolean", description: "Does user consent to SMS communications. OPTIONAL."},
+            tour_confirmed: {type: "boolean", description: "Have tour date and time been confirmed by the user. OPTIONAL."},
         }
     }
 };
 
-export const FUNC_LOOKUP_TOUR_TIMES = {
-    name: "tour_time_lookup",
-    description: "Look up available tour times on a specific day for which data is not currently available.",
-    parameters: {
-        type: "object",
-        properties: {
-            year: {type: "string", description: "Year of the tour. Default: Current Year."},
-            month: {type: "string", description: "Month of the tour. Valid values: January, February, March, April, May, June, July, August, September, October, November, December."},
-            day: {type: "string", description: "Calendar day of the tour."},
-            time: {type: "string", description: "Time of the tour in military time."},
-        }
-    }
-}
-
-export const FUNC_COLLECT_USER_INFO = {
+const COLLECT_USER_INFO_FUNCTION = {
     name: "collect_user_info",
     description: "Collect information about the user.",
     parameters: {
@@ -53,7 +32,7 @@ export const FUNC_COLLECT_USER_INFO = {
     }
 };
 
-export const FUNC_TALK_TO_HUMAN = {
+const TALK_TO_HUMAN_FUNCTION = {
     name: "talk_to_human",
     description: "Connect The user with a human being because they are getting overly frustrated, or wish to speak to a human being.",
     parameters: {
@@ -64,9 +43,8 @@ export const FUNC_TALK_TO_HUMAN = {
     }
 };
 
-export const FUNCTIONS = {
-    "schedule_tour": FUNC_SCHEDULE_TOUR,
-    "tour_time_lookup": FUNC_LOOKUP_TOUR_TIMES,
-    "collect_user_info": FUNC_COLLECT_USER_INFO,
-    "talk_to_human": FUNC_TALK_TO_HUMAN
+export {
+    SCHEDULE_TOUR_FUNCTION,
+    COLLECT_USER_INFO_FUNCTION,
+    TALK_TO_HUMAN_FUNCTION
 };
