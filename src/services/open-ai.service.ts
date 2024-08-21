@@ -31,153 +31,158 @@ export class OpenAiService {
             consent_to_sms: boolean,
             tour_confirmed: boolean
         }) => {
-            if (call.tourScheduled()) {
-                await this.speakPrompt(stream, call, "[Tell the user they have already scheduled a tour and tell them the date and time.]");
-                return;
-            }
+            try {
+                if (call.tourScheduled()) {
+                    await this.speakPrompt(stream, call, "[Tell the user they have already scheduled a tour and tell them the date and time.]");
+                    return;
+                }
 
-            let smsConsent = call.getSMSConsent() || params.consent_to_sms;
-            let tourConfirmed = call.getTourDateTimeConfirmed() || params.tour_confirmed;
-            let tourDate: DateTime = ActiveCall.compileTourDateTime(
-                call.getTimezone(),
-                params.day,
-                params.month,
-                params.year
-            );
-
-            if (!tourDate) {
-                tourDate = call.getTourDate();
-            }
-
-            let tourTime = params.time;
-            if (!tourTime) {
-                tourTime = call.getTourTime();
-            }
-
-            let tourDateTime;
-            if (tourDate && tourTime) {
-                tourDateTime = ActiveCall.compileTourDateTime(
+                let smsConsent = call.getSMSConsent() || params.consent_to_sms;
+                let tourConfirmed = call.getTourDateTimeConfirmed() || params.tour_confirmed;
+                let tourDate: DateTime = ActiveCall.compileTourDateTime(
                     call.getTimezone(),
-                    tourDate.day,
-                    tourDate.monthLong,
-                    tourDate.year,
-                    tourTime
+                    params.day,
+                    params.month,
+                    params.year
                 );
-            }
 
-            if (!tourDateTime) {
-                tourDateTime = call.getTourDateTime();
-            }
+                if (!tourDate) {
+                    tourDate = call.getTourDate();
+                }
 
-            if (tourDateTime) {
-                if ((smsConsent === true || smsConsent === false) && tourConfirmed) {
-                    try {
-                        if (smsConsent) {
-                            await this.resmateService.upsertProspect(
-                                call.conversation.campaign_id,
-                                {sms_opt_in: true, sms_opt_in_source: 'voice', phone: call.conversation.conversationInfo.phone}
-                            );
+                let tourTime = params.time;
+                if (!tourTime) {
+                    tourTime = call.getTourTime();
+                }
+
+                let tourDateTime;
+                if (tourDate && tourTime) {
+                    tourDateTime = ActiveCall.compileTourDateTime(
+                        call.getTimezone(),
+                        tourDate.day,
+                        tourDate.monthLong,
+                        tourDate.year,
+                        tourTime
+                    );
+                }
+
+                if (!tourDateTime) {
+                    tourDateTime = call.getTourDateTime();
+                }
+
+                if (tourDateTime) {
+                    if ((smsConsent === true || smsConsent === false) && tourConfirmed) {
+                        try {
+                            if (smsConsent) {
+                                await this.resmateService.upsertProspect(
+                                    call.conversation.campaign_id,
+                                    {sms_opt_in: true, sms_opt_in_source: 'voice', phone: call.conversation.conversationInfo.phone}
+                                );
+                            }
+
+                            call.updateSystemPrompt(
+                                await this.getAvailableTimesUpdateForCall(call, tourDateTime),
+                                {
+                                    tour_date: tourDate,
+                                    tour_time: tourTime,
+                                    tour_date_time: tourDateTime,
+                                    tour_date_time_confirmed: true,
+                                    sms_consent: smsConsent
+                                });
+
+                            if (call.checkTourTimeAvailable(tourDateTime)) {
+                                await this.resmateService.scheduleTour(call.conversation);
+
+                                call.updateSystemPrompt(null, {tour_scheduled: true});
+
+                                await this.speakPrompt(stream, call, '[Tell the user their tour has been scheduled and ask if you can help with anything else.]');
+                                return;
+                            }
+
+                            await this.speakPrompt(stream, call,"[Apologize and tell the user that the requested date and time are unavailable.]");
+                            return;
+                        } catch (e) {
+                            this.logger.error("OpenAiService completionStream LLM function confirm_tour_date_time", {e, call});
+                            call.updateSystemPrompt(null, {
+                                tour_date: null,
+                                tour_time: null,
+                                tour_date_time: null,
+                                tour_scheduled: null,
+                                tour_date_time_confirmed: null,
+                                sms_consent: null
+                            });
+                            await this.speakPrompt(stream, call,"[Apologize to the user because something went wrong scheduling the tour.");
+                            return;
                         }
-
-                        call.updateSystemPrompt(
-                            await this.getAvailableTimesUpdateForCall(call, tourDateTime),
-                            {
+                    } else if (smsConsent !== true && smsConsent !== false) {
+                        call.updateSystemPrompt(null, {
                             tour_date: tourDate,
                             tour_time: tourTime,
                             tour_date_time: tourDateTime,
-                            tour_date_time_confirmed: true,
-                            sms_consent: smsConsent
+                            tour_date_time_confirmed: true
                         });
 
+                        await this.speakPrompt(stream, call,"[Request consent to send the user SMS messages.]");
+                        return;
+                    } else {
+                        call.updateSystemPrompt(
+                            await this.getAvailableTimesUpdateForCall(call, tourDateTime),
+                            {
+                                tour_date: tourDate,
+                                tour_time: tourTime,
+                                tour_date_time: tourDateTime,
+                                sms_consent: smsConsent
+                            });
+
                         if (call.checkTourTimeAvailable(tourDateTime)) {
-                            await this.resmateService.scheduleTour(call.conversation);
-
-                            call.updateSystemPrompt(null, {tour_scheduled: true});
-
-                            await this.speakPrompt(stream, call, '[Tell the user their tour has been scheduled and ask if you can help with anything else.]');
+                            await this.speakPrompt(stream, call,"[Request confirmation of the user's tour date and time.]");
                             return;
                         }
 
                         await this.speakPrompt(stream, call,"[Apologize and tell the user that the requested date and time are unavailable.]");
                         return;
-                    } catch (e) {
-                        this.logger.error("OpenAiService completionStream LLM function confirm_tour_date_time", {e, call});
-                        call.updateSystemPrompt(null, {
-                            tour_date: null,
-                            tour_time: null,
-                            tour_date_time: null,
-                            tour_scheduled: null,
-                            tour_date_time_confirmed: null,
-                            sms_consent: null
-                        });
-                        await this.speakPrompt(stream, call,"[Apologize to the user because something went wrong scheduling the tour.");
-                        return;
                     }
-                } else if (smsConsent !== true && smsConsent !== false) {
-                    call.updateSystemPrompt(null, {
-                        tour_date: tourDate,
-                        tour_time: tourTime,
-                        tour_date_time: tourDateTime,
-                        tour_date_time_confirmed: true
-                    });
-
-                    await this.speakPrompt(stream, call,"[Request consent to send the user SMS messages.]");
-                    return;
                 } else {
-                    call.updateSystemPrompt(
-                        await this.getAvailableTimesUpdateForCall(call, tourDateTime),
-                        {
-                        tour_date: tourDate,
-                        tour_time: tourTime,
-                        tour_date_time: tourDateTime,
-                        sms_consent: smsConsent
-                    });
+                    if (tourDate) {
+                        call.updateSystemPrompt(
+                            await this.getAvailableTimesUpdateForCall(call, tourDate),
+                            {
+                                tour_date: tourDate,
+                                sms_consent: smsConsent,
+                                tour_date_time_confirmed: false
+                            });
 
-                    if (call.checkTourTimeAvailable(tourDateTime)) {
-                        await this.speakPrompt(stream, call,"[Request confirmation of the user's tour date and time.]");
+                        if (call.checkTourDateAvailable(tourDate)) {
+                            await this.speakPrompt(stream, call,"[Ask the user what time they would like to schedule a tour for.]");
+                            return;
+                        }
+
+                        await this.speakPrompt(stream, call,"[Apologize and tell the user that the requested time is unavailable.]");
+
                         return;
                     }
 
-                    await this.speakPrompt(stream, call,"[Apologize and tell the user that the requested date and time are unavailable.]");
-                    return;
-                }
-            } else {
-                if (tourDate) {
-                    call.updateSystemPrompt(
-                        await this.getAvailableTimesUpdateForCall(call, tourDate),
-                        {
-                        tour_date: tourDate,
-                        sms_consent: smsConsent,
-                        tour_date_time_confirmed: false
-                    });
+                    if (tourTime) {
+                        call.updateSystemPrompt(null, {
+                            tour_time: tourTime,
+                            sms_consent: smsConsent,
+                            tour_date_time_confirmed: false
+                        });
 
-                    if (call.checkTourDateAvailable(tourDate)) {
-                        await this.speakPrompt(stream, call,"[Ask the user what time they would like to schedule a tour for.]");
+                        await this.speakPrompt(stream, call,"[Ask the user what day they would like to schedule a tour for.]");
                         return;
                     }
 
-                    await this.speakPrompt(stream, call,"[Apologize and tell the user that the requested time is unavailable.]");
-
-                    return;
-                }
-
-                if (tourTime) {
                     call.updateSystemPrompt(null, {
-                        tour_time: tourTime,
                         sms_consent: smsConsent,
-                        tour_date_time_confirmed: false
                     });
 
-                    await this.speakPrompt(stream, call,"[Ask the user what day they would like to schedule a tour for.]");
+                    await this.speakPrompt(stream, call,"[Ask the user when they would like to schedule a tour for.]");
                     return;
                 }
-
-                call.updateSystemPrompt(null, {
-                    sms_consent: smsConsent,
-                });
-
-                await this.speakPrompt(stream, call,"[Ask the user when they would like to schedule a tour for.]");
-                return;
+            } catch (e) {
+                this.logger.error({e});
+                await this.speakPrompt(stream, call,"[Apologize and tell the user that something went wrong. Ask them to try again or ask about something else.]");
             }
         },
         talk_to_human: async (stream, call: ActiveCall, params: {reason: string}) => {
