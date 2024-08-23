@@ -54,6 +54,7 @@ export class GoogleService {
                             stream.push(result?.results?.[0]?.alternatives?.[0]?.transcript);
                             stream.push(DONE_BUFFER);
                         } else {
+                            original_this.logger.error("GoogleService getSpeechToTextStream recognize did not return valid value", {result});
                             call.promptAI("Apologize because something has gone wrong, then ask if the user has further questions.");
                         }
                     } catch (e) {
