@@ -46,7 +46,6 @@ export class GoogleService {
                                 languageCode: 'en-US',
                                 useEnhanced: true,
                                 model: 'phone_call',
-
                             },
                         });
                         chunks = [];
@@ -55,7 +54,7 @@ export class GoogleService {
                             stream.push(DONE_BUFFER);
                         } else {
                             original_this.logger.error("GoogleService getSpeechToTextStream recognize did not return valid value", {result});
-                            call.promptAI("Apologize because something has gone wrong, then ask if the user has further questions.");
+                            call.promptAI("Apologize and ask them to repeat themselves.");
                         }
                     } catch (e) {
                         original_this.logger.error(e);
