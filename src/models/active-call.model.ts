@@ -426,7 +426,7 @@ export class ActiveCall {
                 ...times
             ];
         }
-
+        console.log("BLOCKED TOUR TIMES", this.conversation.propertyInfo.blocked_tour_times); // TODO: remove this.
         return [
             ...this.conversation.propertyInfo.blocked_tour_times.filter(t => !!t && t.split('T')[0] !== dayToUpdate),
             ...times
