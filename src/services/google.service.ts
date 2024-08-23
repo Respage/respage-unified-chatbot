@@ -54,7 +54,7 @@ export class GoogleService {
                             stream.push(DONE_BUFFER);
                         } else {
                             original_this.logger.error("GoogleService getSpeechToTextStream recognize did not return valid value", {result});
-                            call.promptAI("Apologize and ask them to repeat themselves.");
+                            call.promptAI("Apologize, say you didn't catch that, and ask them to repeat themselves. Suggest they try using more words.");
                         }
                     } catch (e) {
                         original_this.logger.error(e);
