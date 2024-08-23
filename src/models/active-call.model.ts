@@ -406,7 +406,7 @@ export class ActiveCall {
         }
 
         return [
-            ...this.conversation.propertyInfo.some_available_tour_times.filter(t => t.split('T')[0] !== dayToUpdate),
+            ...this.conversation.propertyInfo.some_available_tour_times.filter(t => !!t && t.split('T')[0] !== dayToUpdate),
             ...times
         ];
     }
@@ -428,7 +428,7 @@ export class ActiveCall {
         }
 
         return [
-            ...this.conversation.propertyInfo.blocked_tour_times.filter(t => t.split('T')[0] !== dayToUpdate),
+            ...this.conversation.propertyInfo.blocked_tour_times.filter(t => !!t && t.split('T')[0] !== dayToUpdate),
             ...times
         ];
     }
