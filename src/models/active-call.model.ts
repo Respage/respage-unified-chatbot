@@ -349,7 +349,7 @@ export class ActiveCall {
         return this.conversation.conversationInfo?.tour_date_time;
     }
 
-    tourScheduled() {
+    getTourScheduled() {
         return this.conversation.conversationInfo?.tour_scheduled;
     }
 

@@ -180,6 +180,38 @@ export class VoiceService {
                         conversation_type: 'voice'
                     }
                 );
+
+                try {
+                    if (user_info.tour_date_time && user_info.tour_confirmed && user_info.tour_scheduled) {
+                        const collectedDate = DateTime.fromISO(user_info.tour_date_time, {zone: call.getTimezone()});
+                        if (!call.getTourScheduled()) {
+                            if (user_info.sms_consent && !call.getSMSConsent()) {
+                                await this.resmateService.upsertProspect(
+                                    call.conversation.campaign_id,
+                                    {sms_opt_in: true, sms_opt_in_source: 'voice', phone: call.conversation.conversationInfo.phone}
+                                );
+                            }
+
+                            const {availableTimes} = await this.resmateService.getTourTimes(
+                                call.conversation.campaign_id,
+                                collectedDate.toFormat('yyyy-LL-dd'),
+                                1
+                            );
+
+                            if (availableTimes?.length) {
+                                if (availableTimes.find(t => +DateTime.fromISO(t, {zone: call.getTimezone()}) === +collectedDate)) {
+                                    await this.resmateService.scheduleTour(call.conversation);
+                                }
+                            } else {
+                                await this.resmateService.escalateToHumanContact(call, "The user was given an unavailable tour date and time.");
+                            }
+                        } else if (+collectedDate !== +call.getTourDateTime()) {
+                            await this.resmateService.escalateToHumanContact(call, "The user may have been scheduled for the wrong time.");
+                        }
+                    }
+                } catch (e) {
+                    this.logger.error({e});
+                }
             } catch (e) {
                 this.logger.error({e});
             }
