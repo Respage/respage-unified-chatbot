@@ -26,7 +26,7 @@ const COLLECT_USER_INFO_FUNCTION = {
             move_in_day: {type: "string", description: "Calendar day the user would like to move in."},
             move_in_month: {type: "string", description: "Month the user would like to move in. Valid values: January, February, March, April, May, June, July, August, September, October, November, December."},
             move_in_year: {type: "string", description: "Year the user would like to move in. Default: Current Year."},
-            tour_date_time: {type: "string", description: "The date and time a user wishes to tour the property. format: ISODate"},
+            tour_date_time: {type: "string", description: "The date and time a user wishes to tour the property. format: ISO Date. Example: 2024-08-01T05:00:00.000Z"},
             tour_confirmed: {type: "boolean", description: "True if the tour date and time has been confirmed by the user."},
             tour_scheduled: {type: "boolean", description: "True if the tour was scheduled."},
             sms_consent: {type: "boolean", description: "True if the user consents to SMS messages."},

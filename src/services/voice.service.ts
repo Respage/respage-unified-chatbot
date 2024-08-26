@@ -184,6 +184,7 @@ export class VoiceService {
                 try {
                     if (user_info.tour_date_time && user_info.tour_confirmed && user_info.tour_scheduled) {
                         const collectedDate = DateTime.fromISO(user_info.tour_date_time, {zone: call.getTimezone()});
+                        this.logger.info("call onClose detected tour date / time", {user_info, collectedDate: collectedDate.toISO()});
                         if (!call.getTourScheduled()) {
                             if (user_info.sms_consent && !call.getSMSConsent()) {
                                 await this.resmateService.upsertProspect(
@@ -192,19 +193,25 @@ export class VoiceService {
                                 );
                             }
 
-                            const {availableTimes} = await this.resmateService.getTourTimes(
-                                call.conversation.campaign_id,
-                                collectedDate.toFormat('yyyy-LL-dd'),
-                                1
-                            );
+                            try {
+                                const {availableTimes} = await this.resmateService.getTourTimes(
+                                    call.conversation.campaign_id,
+                                    collectedDate.toFormat('yyyy-LL-dd'),
+                                    1
+                                );
 
-                            if (availableTimes?.length) {
-                                if (availableTimes.find(t => +DateTime.fromISO(t, {zone: call.getTimezone()}) === +collectedDate)) {
-                                    await this.resmateService.scheduleTour(call.conversation);
+                                if (availableTimes?.length) {
+                                    if (availableTimes.find(t => +DateTime.fromISO(t, {zone: call.getTimezone()}) === +collectedDate)) {
+                                        await this.resmateService.scheduleTour(call.conversation);
+                                    }
+                                } else {
+                                    await this.resmateService.escalateToHumanContact(call, "The user was given an unavailable tour date and time.");
                                 }
-                            } else {
-                                await this.resmateService.escalateToHumanContact(call, "The user was given an unavailable tour date and time.");
+                            } catch(e) {
+                                await this.resmateService.escalateToHumanContact(call, "Something went wrong scheduling this user's tour.");
+                                throw e;
                             }
+
                         } else if (+collectedDate !== +call.getTourDateTime()) {
                             await this.resmateService.escalateToHumanContact(call, "The user may have been scheduled for the wrong time.");
                         }
