@@ -28,7 +28,7 @@ const SAVE_SMS_CONSENT_FUNCTION = {
 
 const LOOKUP_TOUR_TIMES_FUNCTION = {
     name: "look_up_tour_times",
-    description: "Check for tour availability on specific date.",
+    description: "Check for tour availability on a specific date.",
     parameters: {
         type: "object",
         properties: {

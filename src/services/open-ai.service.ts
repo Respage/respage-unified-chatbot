@@ -520,7 +520,9 @@ export class OpenAiService {
                         const { content, toolCalls } = await responsePromise;
 
                         if (toolCalls.length) {
+
                             for (const toolCall of toolCalls) {
+                                original_this.logger.info("Calling function", {toolCall});
                                 await original_this.functions[toolCall.function.name](stream, call, toolCall.function.arguments);
                             }
                         } else if (content) {
