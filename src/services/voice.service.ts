@@ -164,7 +164,7 @@ export class VoiceService {
         call.onClose(async () => {
             try {
                 const user_info: any = await this.openAIService.getFunctionResults(call, COLLECT_USER_INFO_FUNCTION, "collect_user_info");
-
+                this.logger.info("call onClose", {call, user_info});
                 if (user_info.move_in_month) {
                     user_info.move_in_date = ActiveCall.compileTourDateTime(call.conversation.timezone, user_info.move_in_day, user_info.move_in_month, user_info.move_in_year);
                 }
@@ -184,7 +184,7 @@ export class VoiceService {
                 try {
                     if (user_info.tour_date_time && user_info.tour_confirmed && user_info.tour_scheduled) {
                         const collectedDate = DateTime.fromISO(user_info.tour_date_time).setZone(call.getTimezone());
-                        this.logger.info("call onClose detected tour date / time", {user_info, collectedDate: collectedDate.toISO()});
+                        this.logger.info("call onClose detected tour date / time", {call, user_info, collectedDate: collectedDate.toISO()});
                         if (!call.getTourScheduled()) {
                             if (user_info.sms_consent && !call.getSMSConsent()) {
                                 await this.resmateService.upsertProspect(
@@ -217,10 +217,10 @@ export class VoiceService {
                         }
                     }
                 } catch (e) {
-                    this.logger.error({e});
+                    this.logger.error("call onClose double check tour", {e});
                 }
             } catch (e) {
-                this.logger.error({e});
+                this.logger.error("call onClose", {e});
             }
         });
 

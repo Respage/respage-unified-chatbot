@@ -1,6 +1,6 @@
 const SCHEDULE_TOUR_FUNCTION = {
-    name: "collect_tour_information",
-    description: "Called whenever new information about a tour request is provided.",
+    name: "schedule_tour",
+    description: "Schedule a tour on a specific day and time.",
     parameters: {
         type: "object",
         properties: {
@@ -8,12 +8,23 @@ const SCHEDULE_TOUR_FUNCTION = {
             month: {type: "string", description: "Month of the tour. Valid values: January, February, March, April, May, June, July, August, September, October, November, December."},
             day: {type: "string", description: "Calendar day of the tour."},
             time: {type: "string", description: "Time of the tour in military time."},
-            sms_consent: {type: "boolean", description: "True if the user consents to SMS messages."},
             tour_confirmed: {type: "boolean", description: "True if the tour date and time has been confirmed by the user."},
         },
-        required: []
+        required: ['tour_confirmed']
     }
 };
+
+const SAVE_SMS_CONSENT_FUNCTION = {
+    name: "save_sms_consent",
+    description: "Save response to request for consent to send SMS messages.",
+    parameters: {
+        type: "object",
+        properties: {
+            sms_consent: {type: "boolean", description: "True if the user consents to SMS messages."},
+        },
+        required: ['sms_consent']
+    }
+}
 
 const LOOKUP_TOUR_TIMES_FUNCTION = {
     name: "look_up_tour_times",
@@ -69,5 +80,6 @@ export {
     SCHEDULE_TOUR_FUNCTION,
     LOOKUP_TOUR_TIMES_FUNCTION,
     COLLECT_USER_INFO_FUNCTION,
-    TALK_TO_HUMAN_FUNCTION
+    TALK_TO_HUMAN_FUNCTION,
+    SAVE_SMS_CONSENT_FUNCTION
 };

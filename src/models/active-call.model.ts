@@ -5,7 +5,7 @@ import {ChatHistoryLog, Conversation, ConversationInfo, PropertyInfo} from "./co
 import {DateTime} from "luxon";
 import {
     TALK_TO_HUMAN_FUNCTION,
-    SCHEDULE_TOUR_FUNCTION, LOOKUP_TOUR_TIMES_FUNCTION
+    SCHEDULE_TOUR_FUNCTION, LOOKUP_TOUR_TIMES_FUNCTION, SAVE_SMS_CONSENT_FUNCTION
 } from "./open-ai-functions.model";
 import {OpenAiService} from "../services/open-ai.service";
 const {pipeline} = nodeStreamPromises;
@@ -96,7 +96,7 @@ export class ActiveCall {
         const original_this = this;
 
         this.updateSystemPrompt(systemPrompData.property, systemPrompData.conversation);
-        this.conversation.functions = [SCHEDULE_TOUR_FUNCTION, LOOKUP_TOUR_TIMES_FUNCTION, TALK_TO_HUMAN_FUNCTION];
+        this.conversation.functions = [SCHEDULE_TOUR_FUNCTION, SAVE_SMS_CONSENT_FUNCTION, LOOKUP_TOUR_TIMES_FUNCTION, TALK_TO_HUMAN_FUNCTION];
 
         let streamStart = 0;
         let audioLength = 0;
