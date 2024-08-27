@@ -23,6 +23,51 @@ export class OpenAiService {
     private client: OpenAI;
 
     private functions = {
+        look_up_tour_times: async (stream, call: ActiveCall, params: {
+            year: string,
+            month: string,
+            day: string,
+            time: string,
+        }) => {
+            let tourDate: DateTime = ActiveCall.compileTourDateTime(
+                call.getTimezone(),
+                params.day,
+                params.month,
+                params.year,
+            );
+
+            let tourDateTime: DateTime;
+
+            if (params.time) {
+                tourDateTime = ActiveCall.compileTourDateTime(
+                    call.getTimezone(),
+                    params.day,
+                    params.month,
+                    params.year,
+                    params.time
+                );
+            }
+
+            call.updateSystemPrompt(
+                await this.getAvailableTimesUpdateForCall(call, tourDateTime || tourDate),
+                {
+                    tour_date: tourDate,
+                    tour_time: params.time,
+                    tour_date_time: tourDateTime
+                });
+
+            if (tourDateTime && call.checkTourTimeAvailable(tourDateTime)) {
+                await this.speakPrompt(stream, call, '[Tell the user that the time they want is available.]');
+                return;
+            }
+
+            if (tourDate && call.checkTourDateAvailable(tourDate)) {
+                await this.speakPrompt(stream, call, '[Tell the user that the day they want is available.]');
+                return;
+            }
+
+            await this.speakPrompt(stream, call, '[Apologize and say that day or time is unavailable.]');
+        },
         collect_tour_information: async (stream, call: ActiveCall, params: {
             year: string,
             month: string,

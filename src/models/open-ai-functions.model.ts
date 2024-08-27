@@ -15,6 +15,21 @@ const SCHEDULE_TOUR_FUNCTION = {
     }
 };
 
+const LOOKUP_TOUR_TIMES_FUNCTION = {
+    name: "look_up_tour_times",
+    description: "Check for tour availability on specific date.",
+    parameters: {
+        type: "object",
+        properties: {
+            year: {type: "string", description: "Year of the tour. Default: Current Year."},
+            month: {type: "string", description: "Month of the tour. Valid values: January, February, March, April, May, June, July, August, September, October, November, December."},
+            day: {type: "string", description: "Calendar day of the tour."},
+            time: {type: "string", description: "Time of the tour in military time."},
+        },
+        required: ['month', 'day']
+    }
+};
+
 const COLLECT_USER_INFO_FUNCTION = {
     name: "collect_user_info",
     description: "Collect information about the user.",
@@ -52,6 +67,7 @@ const TALK_TO_HUMAN_FUNCTION = {
 
 export {
     SCHEDULE_TOUR_FUNCTION,
+    LOOKUP_TOUR_TIMES_FUNCTION,
     COLLECT_USER_INFO_FUNCTION,
     TALK_TO_HUMAN_FUNCTION
 };
