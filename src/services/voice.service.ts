@@ -183,7 +183,7 @@ export class VoiceService {
 
                 try {
                     if (user_info.tour_date_time && user_info.tour_confirmed && user_info.tour_scheduled) {
-                        const collectedDate = DateTime.fromISO(user_info.tour_date_time).setZone(call.getTimezone(), {keepLocalTime: true});
+                        const collectedDate = DateTime.fromISO(user_info.tour_date_time).setZone(call.getTimezone());
                         this.logger.info("call onClose detected tour date / time", {user_info, collectedDate: collectedDate.toISO()});
                         if (!call.getTourScheduled()) {
                             if (user_info.sms_consent && !call.getSMSConsent()) {
