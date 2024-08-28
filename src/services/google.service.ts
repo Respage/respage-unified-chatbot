@@ -49,7 +49,8 @@ export class GoogleService {
                             },
                         });
                         chunks = [];
-                        if (result?.results?.[0]?.alternatives?.[0]?.transcript) {
+                        const transcript = result?.results?.find(r => r?.alternatives?.find(a => !!a.transcript && a.confidence > 0.5));
+                        if (transcript) {
                             stream.push(result?.results?.[0]?.alternatives?.[0]?.transcript);
                             stream.push(DONE_BUFFER);
                         } else {
