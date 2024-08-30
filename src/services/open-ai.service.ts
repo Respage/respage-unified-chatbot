@@ -614,7 +614,7 @@ export class OpenAiService {
     async getFunctionResults(call: ActiveCall, func: any, funcName: string) {
         const params: ChatCompletionCreateParamsNonStreaming = {
             model: process.env.OPEN_AI_GPT_MODEL,
-            messages: call.getCallHistory(),
+            messages: [{role: 'system', content: `Today's date is ${(new Date()).toString().split(/\d\d:\d\d:\d\d/)[0].trim()}.`}, ...call.getCallHistory()],
             stream: false,
         };
 

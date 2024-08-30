@@ -373,6 +373,10 @@ export class ActiveCall {
         return null;
     }
 
+    getSystemPrompt() {
+        return this.conversation.getSystemPrompt();
+    }
+
     updateSystemPrompt(propertyInfoUpdate?: PropertyInfo, conversationInfoUpdate?: ConversationInfo) {
         this.conversation.updateSystemPrompt(propertyInfoUpdate, conversationInfoUpdate);
     }

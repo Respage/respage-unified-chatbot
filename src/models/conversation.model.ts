@@ -126,6 +126,10 @@ export class Conversation {
         return [this.systemPrompt, ...this.conversationMemory];
     }
 
+    getSystemPrompt() {
+        return this.systemPrompt;
+    }
+
     getCallHistory() {
         return this.conversationHistory;
     }
