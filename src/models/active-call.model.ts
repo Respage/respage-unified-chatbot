@@ -434,7 +434,7 @@ export class ActiveCall {
     }
 
     getSMSConsent() {
-        return !!this.conversation.conversationInfo.sms_consent;
+        return this.conversation.conversationInfo.sms_consent;
     }
 
     getTourDate() {
