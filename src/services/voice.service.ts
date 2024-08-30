@@ -216,6 +216,7 @@ export class VoiceService {
 
                                 if (availableTimes?.length) {
                                     if (availableTimes.find(t => +DateTime.fromISO(t, {zone: call.getTimezone()}) === +collectedDate)) {
+                                        call.updateSystemPrompt(null, {tour_date_time: collectedDate});
                                         await this.resmateService.scheduleTour(call.conversation);
                                     }
                                 } else {
