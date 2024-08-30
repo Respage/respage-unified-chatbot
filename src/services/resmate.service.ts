@@ -172,10 +172,10 @@ export class ResmateService {
         const { tour_length, timezone } = conversation.propertyInfo.tour_availability;
         const { schedule_tour_options } = conversation.propertyInfo;
 
-        const tourDateTimeUTC = tour_date_time.toUTC();
+        const tourDateTimeUTC = tour_date_time.toUTC().setZone(conversation.timezone, { keepLocalTime: true });
 
         const basicReservation = {
-            start_time: tourDateTimeUTC.toUTC().toISO(),
+            start_time: tourDateTimeUTC.toISO(),
             end_time: tourDateTimeUTC.plus({minutes: tour_length}).toISO(),
             campaign_id: conversation.campaign_id,
             prospect_id: prospect._id,
