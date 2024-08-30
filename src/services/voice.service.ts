@@ -117,17 +117,19 @@ export class VoiceService {
                     }
 
                     const {
+                        _id,
                         first_name,
                         last_name,
                         email_address,
                         phone,
-                        interests,
+                        interests
                     } = prospect;
 
                     call.updateSystemPrompt(
                         null,
                         {
                             prospect: {
+                                _id,
                                 first_name,
                                 last_name,
                                 email_address,
