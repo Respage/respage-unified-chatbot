@@ -230,6 +230,12 @@ export class VoiceService {
                             }
 
                         } else if (!collectedDate.equals(call.getTourDateTime())) {
+                            this.logger.error(
+                                "call onClose double check tour collectedDate is not equal to saved tour_date_time",
+                                {
+                                    collectedDate: collectedDate.toISO(), tour_date_time: call.getTourDateTime()
+                                }
+                            );
                             await this.resmateService.escalateToHumanContact(call, "The user may have been scheduled for the wrong time.");
                         }
                     }
