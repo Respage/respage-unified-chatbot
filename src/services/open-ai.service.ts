@@ -36,9 +36,10 @@ export class OpenAiService {
                 return;
             }
 
-            let smsConsent = call.getSMSConsent()
-            if (smsConsent !== true && smsConsent !== false && (params.sms_consent == true || params.sms_consent === false)) {
+            let smsConsent = call.getSMSConsent();
+            if (smsConsent !== true && smsConsent !== false && params.sms_consent === true) {
                 try {
+                    this.logger.info("OpenAiService completionStream LLM function schedule_tour sms_consent setting to true", {params});
                     await this.resmateService.upsertProspect(
                         call.conversation.campaign_id,
                         {sms_opt_in: true, sms_opt_in_source: 'voice', phone: call.conversation.conversationInfo.phone}
