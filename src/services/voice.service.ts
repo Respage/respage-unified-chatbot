@@ -116,10 +116,24 @@ export class VoiceService {
                         this.logger.error("VoiceService startCall getProspect getCommunicationConsent", {e});
                     }
 
+                    const {
+                        first_name,
+                        last_name,
+                        email_address,
+                        phone,
+                        interests,
+                    } = prospect;
+
                     call.updateSystemPrompt(
                         null,
                         {
-                            prospect,
+                            prospect: {
+                                first_name,
+                                last_name,
+                                email_address,
+                                phone,
+                                interests
+                            },
                             first_name: prospect.first_name,
                             last_name: prospect.last_name,
                             tour_date_time,
