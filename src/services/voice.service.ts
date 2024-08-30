@@ -229,7 +229,7 @@ export class VoiceService {
                                 throw e;
                             }
 
-                        } else if (+collectedDate !== +call.getTourDateTime()) {
+                        } else if (!collectedDate.equals(call.getTourDateTime())) {
                             await this.resmateService.escalateToHumanContact(call, "The user may have been scheduled for the wrong time.");
                         }
                     }
