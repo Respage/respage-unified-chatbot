@@ -81,6 +81,9 @@ export class OpenAiService {
                             });
 
                         if (call.checkTourTimeAvailable(tourDateTime)) {
+                            if (!call.getTourDateTime()) {
+                                call.updateSystemPrompt(null, { tour_date_time: tourDateTime });
+                            }
                             await this.resmateService.scheduleTour(call.conversation);
 
                             call.updateSystemPrompt(null, {tour_scheduled: true});
