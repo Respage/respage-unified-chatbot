@@ -32,7 +32,11 @@ export class OpenAiService {
             sms_consent: boolean
         }) => {
             if (call.getTourScheduled()) {
-                await this.speakPrompt(stream, call, "[Tell the user they have already scheduled a tour and tell them the date and time.]");
+                await this.speakPrompt(
+                    stream,
+                    call,
+                    "[If the user just scheduled a tour tell them their tour has been scheduled, otherwise tell the user they have already scheduled a tour. In either case tell them the date and time it has been scheduled for.]"
+                );
                 return;
             }
 
