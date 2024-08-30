@@ -9,6 +9,7 @@ const SCHEDULE_TOUR_FUNCTION = {
             day: {type: "string", description: "Calendar day of the tour."},
             time: {type: "string", description: "Time of the tour in military time."},
             tour_confirmed: {type: "boolean", description: "True if the tour date and time has been confirmed by the user."},
+            sms_consent: {type: "boolean", description: "True if the user consents to SMS messages."},
         },
         required: ['tour_confirmed']
     }

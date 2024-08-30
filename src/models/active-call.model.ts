@@ -96,7 +96,7 @@ export class ActiveCall {
         const original_this = this;
 
         this.updateSystemPrompt(systemPrompData.property, systemPrompData.conversation);
-        this.conversation.functions = [SCHEDULE_TOUR_FUNCTION, SAVE_SMS_CONSENT_FUNCTION, LOOKUP_TOUR_TIMES_FUNCTION, TALK_TO_HUMAN_FUNCTION];
+        this.conversation.functions = [SCHEDULE_TOUR_FUNCTION, LOOKUP_TOUR_TIMES_FUNCTION, TALK_TO_HUMAN_FUNCTION];
 
         let streamStart = 0;
         let audioLength = 0;
