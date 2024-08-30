@@ -44,6 +44,7 @@ export class OpenAiService {
                         call.conversation.campaign_id,
                         {sms_opt_in: true, sms_opt_in_source: 'voice', phone: call.conversation.conversationInfo.phone}
                     );
+                    smsConsent = true;
                 } catch (e) {
                     this.logger.error("OpenAiService completionStream LLM function schedule_tour sms_consent set", {e});
                     smsConsent = null;
