@@ -111,6 +111,15 @@ export class OpenAiService {
                             return;
                         }
 
+                        call.updateSystemPrompt(null,
+                            {
+                            tour_date: null,
+                            tour_time: null,
+                            tour_date_time: null,
+                            tour_scheduled: null,
+                            tour_date_time_confirmed: null
+                        });
+
                         await this.speakPrompt(stream, call,"[Apologize and tell the user that the requested date and time are unavailable.]");
                         return;
                     } else {
