@@ -187,12 +187,18 @@ export class VoiceService {
 
                 const conversation = await this.resmateService.addConversation(call);
 
-                let interests;
+                let interestStrings = [];
                 if (Array.isArray(user_info.interests) && user_info.interests.length) {
-                    interests = user_info.interests;
+                    interestStrings = user_info.interests.map(i => i.trim()).filter(i => !!i);
                 } else if (typeof user_info.interests === 'string') {
-                    interests = user_info.interests.split(',').map(i => i.trim());
+                    interestStrings = user_info.interests.split(',').map(i => i.trim()).filter(i => !!i);
                 }
+
+                const interests = interestStrings.map(i => ({
+                    display_name: i.split(' ').map(s => s[0].toUpperCase() + i.slice(1)).join(' '),
+                    type: 'LLM',
+                    value: i
+                }));
 
                 await this.resmateService.upsertProspect(
                     call.conversation.campaign_id,
