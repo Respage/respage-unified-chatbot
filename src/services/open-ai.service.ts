@@ -17,6 +17,7 @@ import * as ffmpeg from 'fluent-ffmpeg';
 import {ResmateService} from "./resmate.service";
 import {DateTime} from "luxon";
 import {WINSTON_MODULE_PROVIDER} from "nest-winston";
+import {COLLECT_USER_INFO_FUNCTION} from "../models/open-ai-functions.model";
 
 @Injectable()
 export class OpenAiService {
@@ -624,15 +625,21 @@ export class OpenAiService {
         };
     }
 
-    async getFunctionResults(call: ActiveCall, func: any, funcName: string) {
+    async collectConversationInfo(call: ActiveCall) {
         const params: ChatCompletionCreateParamsNonStreaming = {
             model: process.env.OPEN_AI_GPT_MODEL,
-            messages: [{role: 'system', content: `Today's date is ${(new Date()).toString().split(/\d\d:\d\d:\d\d/)[0].trim()}.`}, ...call.getCallHistory()],
+            messages: [
+                {
+                    role: 'system',
+                    content: `You analyze chat conversations with prospective renters at multifamily properties and collect relevant data. Today's date is ${(new Date()).toString().split(/\d\d:\d\d:\d\d/)[0].trim()}.`
+                },
+                ...call.getCallHistory()
+            ],
             stream: false,
         };
 
-        params.functions = [func];
-        params.function_call = {name: funcName};
+        params.functions = [COLLECT_USER_INFO_FUNCTION];
+        params.function_call = {name: "collect_user_info"};
 
         const completion: ChatCompletion = await this.client.chat.completions.create(params);
         const toolCalls = completion?.choices?.[0]?.message?.tool_calls ||

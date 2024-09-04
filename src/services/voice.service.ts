@@ -179,7 +179,7 @@ export class VoiceService {
 
         call.onClose(async () => {
             try {
-                const user_info: any = await this.openAIService.getFunctionResults(call, COLLECT_USER_INFO_FUNCTION, "collect_user_info");
+                const user_info: any = await this.openAIService.collectConversationInfo(call);
                 this.logger.info("call onClose", {call, user_info});
                 if (user_info.move_in_month) {
                     user_info.move_in_date = ActiveCall.compileTourDateTime(call.conversation.timezone, user_info.move_in_day, user_info.move_in_month, user_info.move_in_year);
