@@ -195,7 +195,7 @@ export class VoiceService {
                 }
 
                 const interests = interestStrings.map(i => ({
-                    display_name: i.split(' ').map(s => s[0].toUpperCase() + i.slice(1)).join(' '),
+                    display_name: i.split(' ').map(s => s[0].toUpperCase() + s.slice(1)).join(' '),
                     type: 'LLM',
                     value: i
                 }));
