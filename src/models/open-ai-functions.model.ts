@@ -58,7 +58,7 @@ const COLLECT_USER_INFO_FUNCTION = {
             tour_scheduled: {type: "boolean", description: "True if the tour was scheduled."},
             sms_consent: {type: "boolean", description: "True if the user consents to SMS messages."},
             apartment_size: {type: "string", description: "The size of apartment the user is interested in. Valid Values: 1BR, 2BR, 3BR, etc."},
-            interests: {type: "string", description: "A comma separated list of amenities, etc. that the user expressed interest in."},
+            interests: {type: "string", description: "A comma separated list of things that the user expressed interest in or seemed interested in. Examples: amenities, location, pet policy, tours, apartment availability."},
             talk_to_human: {type: "boolean", description: "Set to true if the user clearly wanted to talk to a human representative at any point in the call."}
         },
         required: []

@@ -187,11 +187,19 @@ export class VoiceService {
 
                 const conversation = await this.resmateService.addConversation(call);
 
+                let interests;
+                if (Array.isArray(user_info.interests) && user_info.interests.length) {
+                    interests = user_info.interests;
+                } else if (typeof user_info.interests === 'string') {
+                    interests = user_info.interests.split(',').map(i => i.trim());
+                }
+
                 await this.resmateService.upsertProspect(
                     call.conversation.campaign_id,
                     {
                         ...call.conversation.conversationInfo.prospect,
                         ...user_info,
+                        interests,
                         conversation_id: conversation._id,
                         conversation_type: 'voice'
                     }
