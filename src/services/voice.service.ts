@@ -158,7 +158,9 @@ export class VoiceService {
                     timezone: info.tour_availability.timezone
                 });
 
-                call.updateSystemPrompt(null, {prospect, first_name: prospect.first_name, last_name: prospect.last_name});
+                const {_id, phone} = prospect;
+
+                call.updateSystemPrompt(null, {prospect: {_id, phone}});
 
                 this.logger.info("VoiceService startCall getTourTimes getProspect new prospect", {call});
             })

@@ -99,14 +99,10 @@ export class Conversation {
             this.conversationInfo = {...this.conversationInfo, ...conversationInfoUpdate};
         }
 
-        let content = `Today's date is ${(new Date()).toString().split(/\d\d:\d\d:\d\d/)[0].trim()}. ` +
-                        SYSTEM_PROMPTS[this.type] +
-                        "\nYou know the follow information about this user and conversation, it is in JSON format:\n" +
-                        JSON.stringify(this.conversationInfo || {}) +
-                        "\nYou know the following information about the property, it is in JSON format:\n" +
-                        JSON.stringify(this.propertyInfo || {}) + "\n";
-
-
+        let content = SYSTEM_PROMPTS[this.type]
+            .replace("{{DATE_TODAY}}", (new Date()).toString().split(/\d\d:\d\d:\d\d/)[0].trim())
+            .replace("{{PROPERTY_INFO}}", JSON.stringify(this.propertyInfo || {}))
+            .replace("{{CONVERSATION_INFO}}", JSON.stringify(this.propertyInfo || {}));
 
         this.systemPrompt = { role: 'system', content };
     }
