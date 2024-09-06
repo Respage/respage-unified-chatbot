@@ -607,7 +607,7 @@ export class OpenAiService {
 
         const completion: ChatCompletion = await this.client.chat.completions.create(params);
 
-        const content = completion?.choices?.[0]?.message?.content;
+        const content = completion?.choices?.[0]?.message?.content.replace(/[*]/g, '');
         const toolCalls = completion?.choices?.[0]?.message?.tool_calls ||
                           (completion?.choices?.[0]?.message?.function_call && [{function: completion?.choices?.[0]?.message?.function_call}]) || [];
 

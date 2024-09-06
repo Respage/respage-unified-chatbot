@@ -213,6 +213,10 @@ export class VoiceService {
                     }
                 );
 
+                if (user_info.talk_to_human) {
+                    await this.resmateService.escalateToHumanContact(call);
+                }
+
                 try {
                     if (user_info.tour_date_time && user_info.tour_confirmed && user_info.tour_scheduled) {
                         const collectedDate = DateTime.fromISO(user_info.tour_date_time).toUTC().setZone(call.getTimezone(), {keepLocalTime: true});
