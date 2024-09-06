@@ -71,7 +71,7 @@ export class Conversation {
 
     functions: any[] = [];
 
-    constructor(campaign_id: number, conversationType: ConversationType, timezone: string, callMemorySize = 10) {
+    constructor(campaign_id: number, conversationType: ConversationType, timezone: string, callMemorySize = 20) {
         this.type = conversationType;
         this.campaign_id = campaign_id;
         this.timezone = timezone;
