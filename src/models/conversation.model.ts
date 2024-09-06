@@ -102,7 +102,7 @@ export class Conversation {
         let content = SYSTEM_PROMPTS[this.type]
             .replace("{{DATE_TODAY}}", (new Date()).toString().split(/\d\d:\d\d:\d\d/)[0].trim())
             .replace("{{PROPERTY_INFO}}", JSON.stringify(this.propertyInfo || {}))
-            .replace("{{CONVERSATION_INFO}}", JSON.stringify(this.propertyInfo || {}));
+            .replace("{{CONVERSATION_INFO}}", JSON.stringify(this.conversationInfo || {}));
 
         this.systemPrompt = { role: 'system', content };
     }
