@@ -1,6 +1,7 @@
+import winston from "winston";
 import {forwardRef, Inject, Injectable} from "@nestjs/common";
 import {Duplex} from "stream";
-import {VoiceService} from "../voice/services/voice.service";
+import {VoiceService} from "./voice.service";
 import {createClient, DeepgramClient, LiveTranscriptionEvents} from "@deepgram/sdk";
 import {SpeakClient} from "@deepgram/sdk/dist/main/packages/SpeakClient";
 import {ActiveCall} from "../models/active-call.model";

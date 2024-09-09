@@ -1,5 +1,7 @@
-import {Injectable} from "@nestjs/common";
+import {Logger} from "winston";
+import {Inject, Injectable} from "@nestjs/common";
 import {createClient, RedisClientType} from "redis";
+import {WINSTON_MODULE_PROVIDER} from "nest-winston";
 
 const SYSTEM_PROMPT_DATA_KEY = `~unified-chatbot~system-prompt-data`;
 
@@ -8,7 +10,7 @@ export class RedisService {
     _client: RedisClientType;
     _pingInterval;
 
-    constructor() {
+    constructor(@Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger) {
         this.connect();
     }
 
@@ -16,9 +18,9 @@ export class RedisService {
         if (this._client) {
             this._client
                 .disconnect()
-                .then(() => console.log('REDIS SERVICE Client disconnected'))
+                .then(() => this.logger.info('REDIS SERVICE Client disconnected'))
                 .catch((err) =>
-                    console.error('REDIS SERVICE Error disconnecting client', { err }),
+                    this.logger.error('REDIS SERVICE Error disconnecting client', { err }),
                 );
             clearInterval(this._pingInterval);
         }
@@ -29,11 +31,11 @@ export class RedisService {
         });
 
         (this._client as any).on('connect', () => {
-            console.log('REDIS SERVICE Connected to Redis!');
+            this.logger.info('REDIS SERVICE Connected to Redis!');
         });
 
         (this._client as any).on('error', (err) => {
-            console.error('REDIS SERVICE Error', { err });
+            this.logger.error('REDIS SERVICE Error', { err });
             if (
                 (typeof err === 'string' && err.includes('connection')) ||
                 (typeof err === 'object' &&
@@ -41,7 +43,7 @@ export class RedisService {
                         err.code,
                     ) > -1)
             ) {
-                console.log('Server stopped due to redis connection');
+                this.logger.info('Server stopped due to redis connection');
                 process.exit(1);
             }
         });
@@ -49,7 +51,6 @@ export class RedisService {
         this._client.connect();
 
         this._pingInterval = setInterval(async () => {
-            console.log('REDIS SERVICE Sending Ping...');
             await this._client.ping();
         }, 30000);
     }
@@ -62,7 +63,7 @@ export class RedisService {
         try {
             return this._client.hGetAll(hashKey as any);
         } catch (err) {
-            console.error('REDIS SERVICE getHash Error', { err });
+            this.logger.error('REDIS SERVICE getHash Error', { err });
         }
     }
 
@@ -70,7 +71,7 @@ export class RedisService {
         try {
             return this._client.hGet(hashKey as any, fieldName as any);
         } catch (err) {
-            console.error('REDIS SERVICE getHashField Error', { err });
+            this.logger.error('REDIS SERVICE getHashField Error', { err });
         }
     }
 
@@ -81,7 +82,7 @@ export class RedisService {
         try {
             return this._client.hmGet(hashKey as any, fieldNames as any);
         } catch (err) {
-            console.error('REDIS SERVICE getHashFields Error', { err });
+            this.logger.error('REDIS SERVICE getHashFields Error', { err });
         }
     }
 
@@ -89,7 +90,7 @@ export class RedisService {
         try {
             return this._client.hDel(hashKey as any, fieldNames as any);
         } catch (err) {
-            console.error('REDIS SERVICE removeHashFields Error', { err });
+            this.logger.error('REDIS SERVICE removeHashFields Error', { err });
         }
     }
 
@@ -101,7 +102,7 @@ export class RedisService {
                 { EX: expiration } as any,
             );
         } catch (err) {
-            console.error('REDIS SERVICE set Error', { err });
+            this.logger.error('REDIS SERVICE set Error', { err });
         }
     }
 
@@ -109,7 +110,7 @@ export class RedisService {
         try {
             return this._client.get(key as any);
         } catch (err) {
-            console.error('REDIS SERVICE get Error', { err });
+            this.logger.error('REDIS SERVICE get Error', { err });
         }
     }
 
@@ -117,7 +118,7 @@ export class RedisService {
         try {
             return this._client.mGet(keys as any);
         } catch (err) {
-            console.error('REDIS SERVICE mget Error', { err });
+            this.logger.error('REDIS SERVICE mget Error', { err });
         }
     }
 
@@ -125,7 +126,7 @@ export class RedisService {
         try {
             return this._client.del(key as any);
         } catch (err) {
-            console.error('REDIS SERVICE remove Error', { err });
+            this.logger.error('REDIS SERVICE remove Error', { err });
         }
     }
 
@@ -147,7 +148,7 @@ export class RedisService {
 
             return response;
         } catch (err) {
-            console.error('REDIS SERVICE setHashField Error', { err });
+            this.logger.error('REDIS SERVICE setHashField Error', { err });
         }
     }
 
@@ -155,7 +156,7 @@ export class RedisService {
         try {
             return this._client.hDel(hashKey as any, fieldName as any);
         } catch (err) {
-            console.error('REDIS SERVICE removeHashField Error', { err });
+            this.logger.error('REDIS SERVICE removeHashField Error', { err });
         }
     }
 
@@ -180,7 +181,7 @@ export class RedisService {
 
             return response;
         } catch (err) {
-            console.error('REDIS SERVICE setHashFields Error', { err });
+            this.logger.error('REDIS SERVICE setHashFields Error', { err });
         }
     }
 
@@ -188,7 +189,7 @@ export class RedisService {
         try {
             return this._client.hVals(hashKey as any);
         } catch (err) {
-            console.error('REDIS SERVICE getHash Error', { err });
+            this.logger.error('REDIS SERVICE getHash Error', { err });
         }
     }
 
@@ -196,7 +197,7 @@ export class RedisService {
         try {
             return this._client.hKeys(hashKey as any);
         } catch (err) {
-            console.error('REDIS SERVICE getHashKeys Error', { err });
+            this.logger.error('REDIS SERVICE getHashKeys Error', { err });
         }
     }
 
@@ -204,7 +205,7 @@ export class RedisService {
         try {
             return this._client.expire(key as any, expiration as any);
         } catch (err) {
-            console.error('REDIS SERVICE setExpiry Error', { err });
+            this.logger.error('REDIS SERVICE setExpiry Error', { err });
         }
     }
 }

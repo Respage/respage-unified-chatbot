@@ -1,7 +1,9 @@
+import winston from "winston";
 import axios from "axios";
 import {Injectable} from "@nestjs/common";
 import {DateTime} from "luxon";
-import {Conversation, ConversationInfo, PropertyInfo} from "../models/conversation.model";
+import {ChatHistoryLog, Conversation, ConversationInfo, PropertyInfo} from "../models/conversation.model";
+import {ActiveCall} from "../models/active-call.model";
 
 export interface UpsertProspectParams {
     _id: string,
@@ -21,6 +23,7 @@ export interface UpsertProspectParams {
     referrer_id: string,
     utm: any,
     sms_opt_in: boolean,
+    sms_opt_in_source: string,
     campaign_id: number
 }
 
@@ -37,6 +40,25 @@ export class ResmateService {
         Authorization: `Basic ${process.env.RESMATE_BASIC_AUTH_ENCODED}`
     };
 
+    static generateConversationLog(chatHistory: Array<ChatHistoryLog>) {
+        return [
+            {
+                from: 'user',
+                direction: 'in',
+                body: '[Call Initiated]',
+                timestamp: chatHistory[0].timestamp
+            },
+            ...chatHistory.map(x => {
+                return {
+                    from: x.role === 'assistant' ? 'bot' : 'user',
+                    direction: x.role === 'assistant' ? 'out' : 'in',
+                    body: x.content,
+                    timestamp: x.timestamp
+                };
+            })
+        ]
+    }
+
     async getVoiceInbox(phone_number: string) {
         const response = await axios({
             url: `${process.env.RESMATE_API_URL}/private/voice/inbox`,
@@ -48,7 +70,7 @@ export class ResmateService {
         return response.data.data;
     }
 
-    async getTourTimes(campaign_id: number, start_date: string, max_count: number): Promise<string[]> {
+    async getTourTimes(campaign_id: number, start_date: string, max_count: number): Promise<{availableTimes: string[], blockedTimes: string[]}> {
         try {
             const response = await axios({
                 url: `${process.env.RESMATE_API_URL}/tour/tour-times`,
@@ -57,9 +79,9 @@ export class ResmateService {
                 headers: this.headers
             });
 
-            return response.data.data;
+            return response.data.data || {availableTimes: [], blockedTimes: []};
         } catch (e) {
-            console.error('getTourDateData error', {e});
+            console.error('getTourDateData error'/*, {e}*/);
             return Promise.resolve(null);
         }
     }
@@ -75,6 +97,26 @@ export class ResmateService {
         return response.data.data;
     }
 
+    async getTourReservation(reservation_id: string) {
+        const response = await axios({
+            method: "GET",
+            url: `${process.env.RESMATE_API_URL}/private/tour/${reservation_id}`,
+            headers: this.headers
+        });
+
+        return response.data.data;
+    }
+
+    async getCommunicationConsent(contact: string, campaign_id: number, channel: string) {
+        const response = await axios({
+            method: "GET",
+            url: `${process.env.RESMATE_API_URL}/private/communication-consent/${channel}/${campaign_id}/${contact}`,
+            headers: this.headers
+        });
+
+        return !!(response.data?.data?.active && response.data?.data?.status === 'opted_in');
+    }
+
     async upsertProspect(campaign_id: number, data: Partial<UpsertProspectParams>) {
         const response = await axios({
             method: "POST",
@@ -86,32 +128,30 @@ export class ResmateService {
         return response.data.data;
     }
 
-    async addConversation(conversation: Conversation) {
-        const callHistory = conversation.getCallHistory();
+    async addConversation(call: ActiveCall) {
+        const callHistory = call.conversation.getCallHistory();
         const response = await axios({
             method: "POST",
-            url: `${process.env.RESMATE_API_URL}/private/conversation/${conversation.campaign_id}/${conversation.conversationInfo.prospect._id}`,
+            url: `${process.env.RESMATE_API_URL}/private/conversation/${call.conversation.campaign_id}/${call.conversation.conversationInfo.prospect._id}`,
             data: {
                 type: 'voice',
-                contact: {user_phone: conversation.conversationInfo.phone},
+                contact: {user_phone: call.conversation.conversationInfo.phone},
                 locale: 'en-US',
-                logs: [
-                    {
-                        from: 'user',
-                        direction: 'in',
-                        body: '[Call Initiated]',
-                        timestamp: callHistory[0].timestamp
-                    },
-                    ...callHistory.map(x => {
-                    return {
-                        from: x.role === 'assistant' ? 'bot' : 'user',
-                        direction: x.role === 'assistant' ? 'out' : 'in',
-                        body: x.content,
-                        timestamp: x.timestamp
-                    };
-                })
-                ]
+                status: 'closed',
+                service_id: call.conversation_id,
+                logs: ResmateService.generateConversationLog(callHistory)
             },
+            headers: this.headers
+        });
+
+        return response.data.data;
+    }
+
+    async updateConversation(service_id: string, update: any) {
+        const response = await axios({
+            method: "PUT",
+            url: `${process.env.RESMATE_API_URL}/private/conversation?service_id=${service_id}`,
+            data: { update },
             headers: this.headers
         });
 
@@ -132,9 +172,11 @@ export class ResmateService {
         const { tour_length, timezone } = conversation.propertyInfo.tour_availability;
         const { schedule_tour_options } = conversation.propertyInfo;
 
+        const tourDateTimeUTC = tour_date_time.toUTC();
+
         const basicReservation = {
-            start_time: tour_date_time.toISO(),
-            end_time: tour_date_time.plus({minutes: tour_length}).toISO(),
+            start_time: tourDateTimeUTC.toISO(),
+            end_time: tourDateTimeUTC.plus({minutes: tour_length}).toISO(),
             campaign_id: conversation.campaign_id,
             prospect_id: prospect._id,
             name: `${first_name ? first_name + " " : ''}${last_name || ''}`,
@@ -153,7 +195,8 @@ export class ResmateService {
                         message: interests?.length ? `Prospect is interested in ${interests.join(', ')}` : null,
                     },
                     prospect,
-                    integration_options: schedule_tour_options
+                    integration_options: schedule_tour_options,
+                    notification_type: 'voice'
                 },
                 timezone
             }
@@ -171,12 +214,65 @@ export class ResmateService {
                         is_recurring: false,
                         status: 'approved',
                         timezone,
-                        external_integration_response: remoteReservationResponse.data.data
-                    }
+                        external_integration_response: remoteReservationResponse.data.data,
+                    },
+                    update_prospect_send_notification: 'voice'
                 }
             }
         });
 
         return reservationResponse.data.data;
+    }
+
+    async escalateToHumanContact(call: ActiveCall, custom?: string) {
+        const data = {
+            prospect: call.conversation.conversationInfo.prospect || {
+                first_name: call.conversation.conversationInfo.first_name,
+                last_name: call.conversation.conversationInfo.last_name,
+                campaign_id: call.conversation.campaign_id,
+                phone: call.conversation.conversationInfo.prospect.conversationInfo.phone,
+            },
+            conversation: {
+                log: ResmateService.generateConversationLog(call.conversation.getCallHistory())
+            },
+        };
+
+        const result = await axios({
+            url: `${process.env.RESMATE_API_URL}/private/prospect/escalate`,
+            method: 'PUT',
+            headers: this.headers,
+            data: {
+                data,
+                reason: "LLM",
+                conversationType: "voice",
+                custom
+            }
+        });
+
+        console.log(result);
+    }
+
+    async isDuringOfficeHours(campaign_id: number, time: DateTime = DateTime.now()) {
+        const timeISO = time.toISO();
+        const response = await axios({
+            url: `${process.env.RESMATE_API_URL}/private/settings/${campaign_id}/hours?start=${timeISO}&end=${timeISO}`,
+            method: 'GET',
+            headers: this.headers
+        });
+        console.log(response.data?.data);
+        const hours = response.data?.data?.[0];
+
+        if (!hours) {
+            return false;
+        }
+
+        const open = DateTime.fromFormat(`${time.year} ${time.month} ${time.day} ${hours.start_hour}`, 'y M d t');
+        const close =  DateTime.fromFormat(`${time.year} ${time.month} ${time.day} ${hours.end_hour}`, 'y M d t');
+
+        if (!open.isValid || !close.isValid) {
+            return false;
+        }
+
+        return +open < +time && +close > +time;
     }
 }

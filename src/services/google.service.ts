@@ -1,13 +1,15 @@
+import winston, {Logger} from "winston";
 import {forwardRef, Inject, Injectable} from '@nestjs/common';
 
 import {SpeechClient} from '@google-cloud/speech';
 import {Duplex, TransformCallback} from "stream";
-import {VoiceService} from "../voice/services/voice.service";
+import {VoiceService} from "./voice.service";
 import {ActiveCall, DONE_BUFFER} from "../models/active-call.model";
 import {TextToSpeechClient} from "@google-cloud/text-to-speech";
 import {google} from "@google-cloud/text-to-speech/build/protos/protos";
 import AudioEncoding = google.cloud.texttospeech.v1.AudioEncoding;
 import {OpenAiService} from "./open-ai.service";
+import {WINSTON_MODULE_PROVIDER} from "nest-winston";
 
 @Injectable()
 export class GoogleService {
@@ -15,7 +17,8 @@ export class GoogleService {
     private textToSpeechClient: TextToSpeechClient;
 
     constructor(@Inject(forwardRef(() => VoiceService)) private voiceService: VoiceService,
-                @Inject(forwardRef(() => OpenAiService)) private openAiService: OpenAiService) {
+                @Inject(forwardRef(() => OpenAiService)) private openAiService: OpenAiService,
+                @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger) {
         const credentials = JSON.parse(process.env.GOOGLE_CLOUD_CREDENTIALS);
         this.speechToTextClient = new SpeechClient({credentials});
         this.textToSpeechClient = new TextToSpeechClient({credentials})
@@ -29,11 +32,9 @@ export class GoogleService {
             read() {},
             async write(chunk: any, encoding: BufferEncoding, callback: TransformCallback) {
                 if (chunk.compare(DONE_BUFFER)) {
-                    console.log("Collect speech to text audio...");
                     chunks.push(chunk);
                 } else {
                     try {
-                        console.log("Start converting speech to text...");
                         call.stopListening();
                         call.startTyping().then();
 
@@ -45,18 +46,19 @@ export class GoogleService {
                                 languageCode: 'en-US',
                                 useEnhanced: true,
                                 model: 'phone_call',
-
                             },
                         });
                         chunks = [];
-                        if (result?.results?.[0]?.alternatives?.[0]?.transcript) {
+                        const transcript = result?.results?.find(r => r?.alternatives?.find(a => !!a.transcript && a.confidence > 0.5));
+                        if (transcript) {
                             stream.push(result?.results?.[0]?.alternatives?.[0]?.transcript);
                             stream.push(DONE_BUFFER);
                         } else {
-                            call.promptAI("Apologize because something has gone wrong, then ask if the user has further questions.");
+                            original_this.logger.error("GoogleService getSpeechToTextStream recognize did not return valid value", {result});
+                            call.promptAI("Apologize, say you didn't catch that, and ask them to repeat themselves. Suggest they try using more words.");
                         }
                     } catch (e) {
-                        console.error(e);
+                        original_this.logger.error(e);
                         call.promptAI("Apologize because something has gone wrong and ask the user to try again.");
                         callback();
                         return;
@@ -84,7 +86,7 @@ export class GoogleService {
                 //         interimResults: false,
                 //     })
                 //     .on('error', e => {
-                //         console.error(e);
+                //         this.logger.error(e);
                 //         transcriptionStream?.end();
                 //         transcriptionStream = null;
                 //     })
@@ -118,7 +120,7 @@ export class GoogleService {
         });
 
         call.onClose(() => {
-            console.log("Closing Google speech to text stream");
+            this.logger.info("Closing Google speech to text stream");
             transcriptionStream?.end()
             stream.end();
         });
@@ -167,7 +169,7 @@ export class GoogleService {
         });
 
         call.onClose(() => {
-            console.log("Closing Google text to speech stream");
+            this.logger.info("Closing Google text to speech stream");
             stream.end();
         });
 

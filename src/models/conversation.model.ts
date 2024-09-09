@@ -13,7 +13,9 @@ export interface PropertyInfo {
     physical_address?: string;
     email_address?: string;
     phone_number?: string;
-    available_tour_times?: string [];
+    some_available_tour_times?: string [];
+    blocked_tour_times?: string[];
+    call_forwarding_number?: string,
     tour_availability?: {
         campaign_id?: number;
         name?: string;
@@ -33,42 +35,55 @@ export interface ConversationInfo {
     sms_consent?: boolean;
     tour_scheduled?: boolean;
     tour_date_time_confirmed?: boolean;
+    tour_date?: DateTime;
+    tour_time?: string;
     tour_date_time?: DateTime;
     prospect?: any;
     reservation_id?: string;
     move_in_date?: DateTime;
     unit_type?: string;
     interests?: string[];
+    is_during_office_hours?: boolean;
 }
 
 export type ChatHistoryLog = ChatCompletionMessageParam & { timestamp?: Date };
 
+export type ConversationType = 'voice' | 'chatbot';
+
+const SYSTEM_PROMPTS = {
+    'voice': process.env.SYSTEM_PROMPT_VOICE
+};
+
 export class Conversation {
     readonly campaign_id: number
 
+    type: ConversationType;
     propertyInfo: PropertyInfo;
     conversationInfo: ConversationInfo;
+    timezone: string;
 
     private systemPrompt: ChatCompletionMessageParam;
 
-    private callHistory: Array<ChatHistoryLog>;
+    private conversationHistory: Array<ChatHistoryLog>;
 
-    private callMemory: Array<ChatHistoryLog>;
-    private callMemorySize: number;
+    private conversationMemory: Array<ChatHistoryLog>;
+    private conversationMemorySize: number;
 
     functions: any[] = [];
 
-    constructor(campaign_id: number, callMemorySize = 10) {
+    constructor(campaign_id: number, conversationType: ConversationType, timezone: string, callMemorySize = 20) {
+        this.type = conversationType;
         this.campaign_id = campaign_id;
+        this.timezone = timezone;
 
         this.systemPrompt = {
             role: 'system',
-            content: `Today's date is ${(new Date()).toString().split(/\d\d:\d\d:\d\d/)[0].trim()}. ` + process.env.SYSTEM_PROMPT_VOICE
+            content: `Today's date is ${DateTime.local({zone: timezone}).toISODate()}. ` + process.env.SYSTEM_PROMPT_VOICE
         };
 
-        this.callHistory = [];
-        this.callMemory = [];
-        this.callMemorySize = callMemorySize;
+        this.conversationHistory = [];
+        this.conversationMemory = [];
+        this.conversationMemorySize = callMemorySize;
     }
 
     updateSystemPrompt(propertyInfoUpdate?: PropertyInfo, conversationInfoUpdate?: ConversationInfo) {
@@ -84,35 +99,34 @@ export class Conversation {
             this.conversationInfo = {...this.conversationInfo, ...conversationInfoUpdate};
         }
 
-        let content = `Today's date is ${(new Date()).toString().split(/\d\d:\d\d:\d\d/)[0].trim()}. ` +
-                        process.env.SYSTEM_PROMPT_VOICE +
-                        "\nYou know the follow information about this user and conversation, it is in JSON format:\n" +
-                        JSON.stringify(this.conversationInfo || {}) +
-                        "\nYou know the following information about the property, it is in JSON format:\n" +
-                        JSON.stringify(this.propertyInfo || {}) + "\n";
+        let content = SYSTEM_PROMPTS[this.type]
+            .replace("{{DATE_TODAY}}", (new Date()).toString().split(/\d\d:\d\d:\d\d/)[0].trim())
+            .replace("{{PROPERTY_INFO}}", JSON.stringify(this.propertyInfo || {}))
+            .replace("{{CONVERSATION_INFO}}", JSON.stringify(this.conversationInfo || {}));
 
-
-
-        console.log(this.conversationInfo);
         this.systemPrompt = { role: 'system', content };
     }
 
     updateCallHistory(message: ChatHistoryLog) {
         message.timestamp = new Date();
-        this.callHistory.push(message);
+        this.conversationHistory.push(message);
 
-        if (this.callMemory.length === this.callMemorySize) {
-            this.callMemory.shift();
+        if (this.conversationMemory.length === this.conversationMemorySize) {
+            this.conversationMemory.shift();
         }
 
-        this.callMemory.push(message);
+        this.conversationMemory.push(message);
     }
 
     getCallMessageWindow() {
-        return [this.systemPrompt, ...this.callMemory];
+        return [this.systemPrompt, ...this.conversationMemory];
+    }
+
+    getSystemPrompt() {
+        return this.systemPrompt;
     }
 
     getCallHistory() {
-        return this.callHistory;
+        return this.conversationHistory;
     }
 }

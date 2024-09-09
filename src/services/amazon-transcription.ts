@@ -1,12 +1,13 @@
-import { Injectable } from '@nestjs/common';
+import {Inject, Injectable} from '@nestjs/common';
 import {StartStreamTranscriptionCommand, TranscribeStreamingClient} from "@aws-sdk/client-transcribe-streaming";
-import {Readable} from "stream";
+import {WINSTON_MODULE_PROVIDER} from "nest-winston";
+import {Logger} from "winston";
 
 @Injectable()
 export class AmazonTranscriptionService {
     private client: TranscribeStreamingClient;
 
-    constructor() {
+    constructor(@Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger) {
         this.client = new TranscribeStreamingClient({
             region: 'us-east-1',
             credentials: {
@@ -28,11 +29,10 @@ export class AmazonTranscriptionService {
 
         try {
             for await (const event of response.TranscriptResultStream) {
-                console.log(JSON.stringify(event));
+                this.logger.info("AmazonTranscriptionService transcribe", {event});
             }
-        } catch(err) {
-            console.log("error")
-            console.log(err)
+        } catch(e) {
+            this.logger.error("AmazonTranscriptionService transcribe", {e});
         }
     }
 }

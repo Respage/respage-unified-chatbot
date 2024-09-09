@@ -1,9 +1,13 @@
 import {WebSocket} from "ws";
 import {Duplex, promises as nodeStreamPromises} from "stream";
-import {VoiceService} from "../voice/services/voice.service";
+import {VoiceService} from "../services/voice.service";
 import {ChatHistoryLog, Conversation, ConversationInfo, PropertyInfo} from "./conversation.model";
 import {DateTime} from "luxon";
-import {FUNC_SCHEDULE_TOUR} from "./open-ai-functions.model";
+import {
+    TALK_TO_HUMAN_FUNCTION,
+    SCHEDULE_TOUR_FUNCTION, LOOKUP_TOUR_TIMES_FUNCTION, SAVE_SMS_CONSENT_FUNCTION
+} from "./open-ai-functions.model";
+import {OpenAiService} from "../services/open-ai.service";
 const {pipeline} = nodeStreamPromises;
 
 const SAMPLE_SIZE = 320; // How many individual samples are in the sample?
@@ -11,7 +15,7 @@ const SAMPLE_SIZE_BYTES = 640; // How many bytes in a single sample?
 const BYTES_PER_SAMPLE = 2;
 const SIGNED_INT_MAX = 32768;
 
-const START_TALKING_THRESHOLD = 12.5; // How many samples must be consistently above the threshold? 50 = 1 second
+const START_TALKING_THRESHOLD = 5; // How many samples must be consistently above the threshold? 50 = 1 second
 const STOP_TALKING_THRESHOLD = 50; // How many samples must be consistently below the threshold? 50 = 1 second
 const AVG_WEIGHT = 24000;
 
@@ -23,7 +27,8 @@ enum ActiveCallStreamState {
 }
 
 export class ActiveCall {
-    private id: string;
+    readonly id: string;
+    readonly conversation_id: string;
 
     private callSocket: WebSocket;
     private readonly onCloseCallbacks: Array<() => void>
@@ -35,6 +40,7 @@ export class ActiveCall {
     doStopAmbiant: boolean = false;
     playingTyping: number = -1
     doNotInterrupt: boolean = false;
+    doForwardCall: boolean = false;
 
     internalMessageIncoming: boolean = false;
 
@@ -49,31 +55,48 @@ export class ActiveCall {
     private maximumVolume;
     private weightedAvgVolume;
 
-    constructor(id: string, campaign_id: number, callMemorySize = 20) {
+    constructor(id: string, conversation_id: string, campaign_id: number, timezone: string, callMemorySize = 20) {
         this.minimumVolume = -1;
         this.maximumVolume = SIGNED_INT_MAX; // maximum absolute value of a signed 16 bit integer
         this.weightedAvgVolume = (this.maximumVolume / 2) + AVG_WEIGHT;
 
         this.id = id;
+        this.conversation_id = conversation_id;
 
         this.onCloseCallbacks = [];
 
-        this.conversation = new Conversation(campaign_id);
+        this.conversation = new Conversation(campaign_id, 'voice', timezone);
     }
 
-    static compileTourDateTime(time: string, day: string, month: string, year?: string) {
-        if (!(time && day && month)) {
+    static compileTourDateTime(timezone: string, day?: string | number, month?: string | number, year?: string | number, time?: string) {
+        if (!(day && month)) {
             return null;
         }
 
-        return DateTime.fromFormat(`${time || '00:00'} ${day || 1} ${month} ${year || DateTime.now().year}`, "HH:mm d MMMM yyyy")
+        if (typeof day === 'number' && day < 10) {
+            day = '0' + day;
+        }
+
+        if (typeof month === 'number' && month < 10) {
+            month = '0' + month;
+        }
+
+        const dateTime = DateTime.fromFormat(`${time || '00:00'} ${day || 1} ${month} ${year || DateTime.now().year}`, "HH:mm d MMMM yyyy", {zone: timezone});
+        return dateTime.isValid ? dateTime : null;
     }
 
-    init(websocket: WebSocket, speechToText: Duplex, AI: Duplex, textToSpeech: Duplex, systemPrompData: { property: PropertyInfo, conversation: ConversationInfo }) {
+    init(websocket: WebSocket,
+         speechToText: Duplex, AI: Duplex,
+         textToSpeech: Duplex,
+         systemPrompData: { property: PropertyInfo, conversation: ConversationInfo },
+         openAiService: OpenAiService,
+         voiceService: VoiceService,
+    ) {
+        console.log('ActiveCall init'/*, {call: this}*/);
         const original_this = this;
 
         this.updateSystemPrompt(systemPrompData.property, systemPrompData.conversation);
-        this.conversation.functions = [FUNC_SCHEDULE_TOUR];
+        this.conversation.functions = [SCHEDULE_TOUR_FUNCTION, LOOKUP_TOUR_TIMES_FUNCTION, TALK_TO_HUMAN_FUNCTION];
 
         let streamStart = 0;
         let audioLength = 0;
@@ -83,11 +106,21 @@ export class ActiveCall {
             read() {},
             async write(chunk, encoding, callback) {
                 if (!chunk.compare(DONE_BUFFER)) {
-                    setTimeout(() => {
-                        console.log("Done streaming audio out...");
+                    setTimeout(async () => {
                         notStreaming = true;
                         streamStart = 0;
                         audioLength = 0;
+
+                        if (original_this.doForwardCall) {
+                            original_this.doForwardCall = false;
+                            try {
+                                await voiceService.forwardCall(original_this);
+                            } catch (e) {
+                                console.error("ActiveCall callStream"/*, {e}*/);
+                                await openAiService.speakPrompt(callStream, original_this, "[The call could not be forwarded. Apologize to the user and ask if they need anything else.]")
+                            }
+                            return;
+                        }
                         original_this.startListening();
                         // original_this.setStallTimeout();
                     }, audioLength - (Date.now() - streamStart));
@@ -96,13 +129,13 @@ export class ActiveCall {
                         streamStart = Date.now();
                         original_this.stopTyping();
                         notStreaming = false;
-                        console.log("Start streaming audio out...");
                     }
 
                     audioLength += (chunk.length / 640) * 20;
 
-                    for (let i = 0; i < chunk.length; i+= 640) {
-                        websocket.send(chunk.subarray(i, i + 640));
+                    for (let i = 0; i + 640 < chunk.length; i += 640) {
+                        let subArray = chunk.subarray(i, i + 640);
+                        websocket.send(subArray);
                         await (new Promise(resolve => setTimeout(resolve, 18)))
                     }
                 }
@@ -113,6 +146,7 @@ export class ActiveCall {
 
         websocket.on('message', (msg) => callStream.push(msg));
         websocket.on('close', async () => {
+            console.log("ActiveCall websocket on close"/*, {call: this}*/);
             for (const callback of this.onCloseCallbacks) {
                 callback();
             }
@@ -134,9 +168,9 @@ export class ActiveCall {
             textToSpeech,
             callStream
         ])
-            .catch(e => {
-                console.error(e);
-            });
+        .catch(e => {
+            console.error("activeCall pipeline"/*, {e}*/);
+        });
     }
 
     // Interface methods
@@ -175,7 +209,7 @@ export class ActiveCall {
                         original_this.pool.push(chunk);
                         if (original_this.pool.length >= START_TALKING_THRESHOLD) {
                             original_this.state = ActiveCallStreamState.STREAM;
-                            console.log("Streaming...");
+
                             yield original_this.pool.shift();
                         }
                     } else {
@@ -212,7 +246,6 @@ export class ActiveCall {
     }
 
     startListening() {
-        console.log("Pooling...");
         this.stopTyping();
         // this.playAmbiant().then();
         this.doNotInterrupt = false;
@@ -252,7 +285,6 @@ export class ActiveCall {
             }
 
             const waitTime = (buffer.length / 32);
-            console.log ("WAITING ", (waitTime / 1000).toFixed(2), " Before next typing.");
 
             await (new Promise<void>(resolve => {
                 let monitorInterval;
@@ -270,7 +302,6 @@ export class ActiveCall {
             }));
         } while (!this.doStopTyping);
 
-        // console.log("SECONDS OF TYPING SENT: ", (sent * 20) / 1000);
         this.stopTyping();
     }
 
@@ -318,8 +349,20 @@ export class ActiveCall {
         return this.conversation.conversationInfo?.tour_date_time;
     }
 
-    tourScheduled() {
+    getTourScheduled() {
         return this.conversation.conversationInfo?.tour_scheduled;
+    }
+
+    tourDateTimeConfirmed() {
+        return this.conversation.conversationInfo?.tour_date_time_confirmed;
+    }
+
+    canForwardCall() {
+        return this.conversation.propertyInfo.call_forwarding_number && this.conversation.conversationInfo.is_during_office_hours;
+    }
+
+    forward() {
+        this.doForwardCall = true;
     }
 
     getFunctions() {
@@ -330,8 +373,84 @@ export class ActiveCall {
         return null;
     }
 
+    getSystemPrompt() {
+        return this.conversation.getSystemPrompt();
+    }
+
     updateSystemPrompt(propertyInfoUpdate?: PropertyInfo, conversationInfoUpdate?: ConversationInfo) {
         this.conversation.updateSystemPrompt(propertyInfoUpdate, conversationInfoUpdate);
+    }
+
+    checkTourDateAvailable(date: DateTime) {
+        return !!(this.conversation.propertyInfo.some_available_tour_times || [])
+            .find(a => DateTime.fromISO(a).toISODate() === date.toISODate());
+    }
+
+    checkTourTimeAvailable(time: DateTime) {
+        return !(this.conversation.propertyInfo.blocked_tour_times || [])
+            .find(b => +DateTime.fromISO(b) === +time) &&
+        !!(this.conversation.propertyInfo.some_available_tour_times || [])
+            .find(a => +DateTime.fromISO(a) === +time);
+    }
+
+    getAvailableTourTimes() {
+        return this.conversation.propertyInfo.some_available_tour_times || [];
+    }
+
+    updatedAvailableTourTimes(times: string[], dayToUpdate?: string) {  // dayToUpdate like '2024-04-04'
+        if (!this.conversation.propertyInfo.some_available_tour_times?.length) {
+            return times;
+        }
+
+        if (!dayToUpdate) {
+            return [
+                ...this.conversation.propertyInfo.some_available_tour_times,
+                ...times
+            ];
+        }
+
+        return [
+            ...this.conversation.propertyInfo.some_available_tour_times.filter(t => !!t && t.split('T')[0] !== dayToUpdate),
+            ...times
+        ];
+    }
+
+    getBlockedTourTimes() {
+        return this.conversation.propertyInfo.blocked_tour_times || [];
+    }
+
+    updatedBlockedTourTimes(times: string[], dayToUpdate?: string) {  // dayToUpdate like '2024-04-04'
+        if (!this.conversation.propertyInfo.blocked_tour_times?.length) {
+            return times;
+        }
+
+        if (!dayToUpdate) {
+            return [
+                ...this.conversation.propertyInfo.blocked_tour_times,
+                ...times
+            ];
+        }
+        console.log("BLOCKED TOUR TIMES", this.conversation.propertyInfo.blocked_tour_times); // TODO: remove this.
+        return [
+            ...this.conversation.propertyInfo.blocked_tour_times.filter(t => !!t && t.split('T')[0] !== dayToUpdate),
+            ...times
+        ];
+    }
+
+    getSMSConsent() {
+        return this.conversation.conversationInfo.sms_consent;
+    }
+
+    getTourDate() {
+        return this.conversation.conversationInfo.tour_date;
+    }
+
+    getTourTime() {
+        return this.conversation.conversationInfo.tour_time;
+    }
+
+    getTimezone() {
+        return this.conversation.propertyInfo.tour_availability.timezone;
     }
 
     // Internal methods

@@ -1,5 +1,6 @@
+import winston from "winston";
 import {forwardRef, Inject, Injectable} from '@nestjs/common';
-import {VoiceService} from "../voice/services/voice.service";
+import {VoiceService} from "./voice.service";
 import {ActiveCall} from "../models/active-call.model";
 import {Duplex, TransformCallback} from "stream";
 import axios from "axios";
