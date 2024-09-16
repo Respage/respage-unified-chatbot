@@ -20,7 +20,7 @@
     "test:watch": "jest --watch",
     "test:cov": "jest --coverage",
     "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
-    "test:e2e": "jest --config ./apps/respage-unified-chatbot-api/test/jest-e2e.json",
+    "test:e2e": "jest --config apps/unified-chatbot-api/test/jest-e2e.json",
     "post-build": "mkdir ./dist/bin && cp ./node_modules/ffmpeg-static/ffmpeg ./dist/bin && cp ./prompt ./dist/prompt && cp -r ./assets ./dist/assets"
   },
   "dependencies": {
