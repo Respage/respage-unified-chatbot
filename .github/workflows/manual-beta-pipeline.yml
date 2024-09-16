@@ -19,7 +19,7 @@ env:
   REGISTRY_URL: 694734131052.dkr.ecr.us-east-1.amazonaws.com
   CLUSTER_NAME: respage-general-stg-ecs
   ## API ENVs
-  API_BUILD_NAME: unified-chatbot-api-stg
+  API_BUILD_NAME: unified-chatbot-api
   API_CONTAINER_NAME: respage-general-stg-ecs
   API_ECR_NAME: unified-chatbot-api-stg
 
