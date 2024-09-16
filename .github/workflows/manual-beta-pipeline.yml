@@ -1,0 +1,85 @@
+name: manual-beta-pipeline
+
+on:
+  workflow_dispatch:
+    inputs:
+      chatbot-api:
+        required: true
+        type: string
+        default: 'true'
+        description: 'Run Chatbot API'
+      tag:
+        required: true
+        type: string
+        default: 'none'
+        description: 'Tag'
+
+env:
+  AWS_ENV: stage
+  REGISTRY_URL: 694734131052.dkr.ecr.us-east-1.amazonaws.com
+  CLUSTER_NAME: respage-general-stg-ecs
+  ## API ENVs
+  API_BUILD_NAME: unified-chatbot-api-stg
+  API_CONTAINER_NAME: respage-general-stg-ecs
+  API_ECR_NAME: unified-chatbot-api-stg
+
+jobs:
+  ## Env setup
+  env-setup:
+    environment: beta
+    name: Setup Environment Variables
+    runs-on: ubuntu-latest
+    outputs:
+      REGISTRY_URL: ${{ steps.set-output-defaults.outputs.REGISTRY_URL }}
+      AWS_ENV: ${{ steps.set-output-defaults.outputs.AWS_ENV }}
+      CLUSTER_NAME: ${{ steps.set-output-defaults.outputs.CLUSTER_NAME }}
+      API_BUILD_NAME: ${{ steps.set-output-defaults.outputs.API_BUILD_NAME }}
+      API_CONTAINER_NAME: ${{ steps.set-output-defaults.outputs.API_CONTAINER_NAME }}
+      API_ECR_NAME: ${{ steps.set-output-defaults.outputs.API_ECR_NAME }}
+    steps:
+      - name: set outputs with default values
+        id: set-output-defaults
+        run: |
+          echo "REGISTRY_URL=${{ env.REGISTRY_URL }}" >> $GITHUB_OUTPUT
+          echo "AWS_ENV=${{ env.AWS_ENV }}" >> $GITHUB_OUTPUT
+          echo "CLUSTER_NAME=${{ env.CLUSTER_NAME }}" >> $GITHUB_OUTPUT
+
+          # API
+          echo "API_BUILD_NAME=${{ env.API_BUILD_NAME }}" >> $GITHUB_OUTPUT
+          echo "API_CONTAINER_NAME=${{ env.API_CONTAINER_NAME }}" >> $GITHUB_OUTPUT
+          echo "API_ECR_NAME=${{ env.API_ECR_NAME }}" >> $GITHUB_OUTPUT
+
+  ## API Build
+  build-chatbot-api:
+    needs: [env-setup]
+    if: ${{ github.event.inputs.chatbot-api == 'true' }}
+    name: build-chatbot-api
+    uses: ./.github/workflows/aws-ecr-build.yml
+    with:
+      tag: ${{ github.event.inputs.tag }}
+      registry_url: ${{ needs.env-setup.outputs.REGISTRY_URL }}
+      build_name: ${{ needs.env-setup.outputs.API_BUILD_NAME }}
+      api_ecr_name: ${{ needs.env-setup.outputs.API_ECR_NAME }}
+      env: ${{ needs.env-setup.outputs.AWS_ENV }}
+    secrets:
+      AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+      AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+      AWS_REGION: ${{ secrets.AWS_REGION }}
+
+  ## API Deploy
+  deploy-chatbot-api:
+    needs: [env-setup, build-chatbot-api]
+    name: deploy-chatbot-api
+    uses: ./.github/workflows/aws-ecs-deploy.yml
+    with:
+      tag: ${{ github.event.inputs.tag }}
+      imageName: ${{ needs.env-setup.outputs.REGISTRY_URL }}/${{ needs.env-setup.outputs.API_ECR_NAME }}:${{ github.sha }}
+      api_container_name: ${{ needs.env-setup.outputs.API_CONTAINER_NAME }}
+      cluster_name: ${{ needs.env-setup.outputs.CLUSTER_NAME }}
+      definition_file: ./.aws/${{ needs.env-setup.outputs.API_BUILD_NAME }}/task-definition-${{ needs.env-setup.outputs.AWS_ENV }}.json
+      check_stability: 'false'
+      env: ${{ needs.env-setup.outputs.AWS_ENV }}
+    secrets:
+      AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+      AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+      AWS_REGION: ${{ secrets.AWS_REGION }}

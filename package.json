@@ -1,5 +1,5 @@
 {
-  "name": "respage-unified-chatbot",
+  "name": "respage-unified-chatbot-api",
   "version": "0.0.1",
   "description": "",
   "engines": {
@@ -10,17 +10,17 @@
   "license": "UNLICENSED",
   "scripts": {
     "build": "nest build && npm run post-build",
-    "format": "prettier --write \"src/**/*.ts\" \"test/**/*.ts\"",
+    "format": "prettier --write \"apps/**/*.ts\" \"libs/**/*.ts\"",
     "start": "nest start",
     "start:dev": "clear && clear && nest start --watch",
     "start:debug": "clear && clear && nest start --debug --watch --insert-brk",
-    "start:prod": "node dist/main",
+    "start:prod": "node dist/apps/respage-unified-chatbot-api/main",
     "lint": "eslint \"{src,apps,libs,test}/**/*.ts\" --fix",
     "test": "jest",
     "test:watch": "jest --watch",
     "test:cov": "jest --coverage",
     "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
-    "test:e2e": "jest --config ./test/jest-e2e.json",
+    "test:e2e": "jest --config ./apps/respage-unified-chatbot-api/test/jest-e2e.json",
     "post-build": "mkdir ./dist/bin && cp ./node_modules/ffmpeg-static/ffmpeg ./dist/bin && cp ./prompt ./dist/prompt && cp -r ./assets ./dist/assets"
   },
   "dependencies": {
@@ -83,7 +83,7 @@
       "json",
       "ts"
     ],
-    "rootDir": "src",
+    "rootDir": ".",
     "testRegex": ".*\\.spec\\.ts$",
     "transform": {
       "^.+\\.(t|j)s$": "ts-jest"
@@ -91,7 +91,10 @@
     "collectCoverageFrom": [
       "**/*.(t|j)s"
     ],
-    "coverageDirectory": "../coverage",
-    "testEnvironment": "node"
+    "coverageDirectory": "./coverage",
+    "testEnvironment": "node",
+    "roots": [
+      "<rootDir>/apps/"
+    ]
   }
 }
