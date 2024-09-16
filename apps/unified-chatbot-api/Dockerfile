@@ -6,7 +6,7 @@ RUN mkdir -p /srv/api
 WORKDIR /srv/api
 ENV NODE_ENV production
 
-ADD ./dist/apps/respage-unified-chatbot-api /srv/api
+ADD ./dist/apps/unified-chatbot-api /srv/api
 ADD ./package.json /srv/api
 
 RUN npm install --production
