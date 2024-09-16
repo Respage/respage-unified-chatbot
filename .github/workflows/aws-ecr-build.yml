@@ -10,7 +10,7 @@ on:
       nodeVersion:
         required: false
         type: string
-        default: '18'
+        default: '22'
       registry_url:
         required: true
         type: string
