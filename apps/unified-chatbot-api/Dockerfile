@@ -8,6 +8,7 @@ ENV NODE_ENV production
 
 ADD ./dist/apps/unified-chatbot-api /srv/api
 ADD ./package.json /srv/api
+ADD ./apps/unified-chatbot-api/assets /srv/api
 
 RUN npm install --production
 RUN npm prune --production
