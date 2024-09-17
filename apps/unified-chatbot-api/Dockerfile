@@ -1,4 +1,4 @@
-FROM node:22 AS BUILD_IMAGE
+FROM node:22.1 AS BUILD_IMAGE
 
 RUN curl -sf https://gobinaries.com/tj/node-prune | bash -s -- -b /usr/local/bin
 
@@ -13,7 +13,7 @@ RUN npm install --production
 RUN npm prune --production
 RUN /usr/local/bin/node-prune
 
-FROM node:22-alpine
+FROM node:22.1-alpine
 
 ENV NODE_ENV production
 COPY --from=BUILD_IMAGE /srv/api /srv/api
