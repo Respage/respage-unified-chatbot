@@ -14,7 +14,7 @@
   "monorepo": true,
   "root": "apps/respage-unified-chatbot",
   "projects": {
-    "respage-unified-chatbot-api": {
+    "unified-chatbot-api": {
       "type": "application",
       "root": "apps/unified-chatbot-api",
       "entryFile": "main",
