@@ -20,7 +20,7 @@ env:
   CLUSTER_NAME: respage-general-stg-ecs
   ## API ENVs
   API_BUILD_NAME: unified-chatbot-api
-  API_CONTAINER_NAME: respage-general-stg-ecs
+  API_CONTAINER_NAME: unified-chatbot-api-stg
   API_ECR_NAME: unified-chatbot-api-stg
 
 jobs:
