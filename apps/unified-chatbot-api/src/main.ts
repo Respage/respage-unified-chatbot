@@ -12,6 +12,6 @@ async function bootstrap() {
   winstonService.init();
   const app = await NestFactory.create(AppModule);
   app.useWebSocketAdapter(new RespageWebSocketAdapter(app));
-  await app.listen(process.env.PORT || 3030);
+  await app.listen(process.env.PORT || 4200);
 }
 bootstrap();
