@@ -37,7 +37,7 @@ export interface ConversationLog {
 @Injectable()
 export class ResmateService {
     private readonly headers = {
-        Authorization: `Basic ${process.env.RESMATE_BASIC_AUTH_ENCODED}`
+        Authorization: `Basic ${Buffer.from(process.env.RESMATE_AUTH_USERNAME + ':' + process.env.RESMATE_AUTH_KEY).toString('base64')}`
     };
 
     static generateConversationLog(chatHistory: Array<ChatHistoryLog>) {
