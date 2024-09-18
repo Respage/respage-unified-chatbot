@@ -4,10 +4,6 @@
   "sourceRoot": "apps/respage-unified-chatbot/src",
   "compilerOptions": {
     "deleteOutDir": true,
-    "assets": [
-      "./prompt",
-      "./node_modules/ffmpeg-static/ffmpeg"
-    ],
     "webpack": true,
     "tsConfigPath": "apps/respage-unified-chatbot/tsconfig.app.json"
   },
@@ -20,7 +16,10 @@
       "entryFile": "main",
       "sourceRoot": "apps/unified-chatbot-api/src",
       "compilerOptions": {
-        "tsConfigPath": "apps/unified-chatbot-api/tsconfig.app.json"
+        "tsConfigPath": "apps/unified-chatbot-api/tsconfig.app.json",
+        "assets": [
+          "assets/**/*"
+        ]
       }
     },
     "respage-unified-chatbot": {
