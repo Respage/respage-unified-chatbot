@@ -36,9 +36,7 @@ export interface ConversationLog {
 
 @Injectable()
 export class ResmateService {
-    private readonly headers = {
-        Authorization: `Basic ${Buffer.from(process.env.RESMATE_AUTH_USERNAME + ':' + process.env.RESMATE_AUTH_KEY).toString('base64')}`
-    };
+    private readonly headers: {Authorization: string};
 
     static generateConversationLog(chatHistory: Array<ChatHistoryLog>) {
         return [
@@ -57,6 +55,12 @@ export class ResmateService {
                 };
             })
         ]
+    }
+
+    constructor() {
+        this.headers = {
+            Authorization: `Basic ${Buffer.from(process.env.RESMATE_AUTH_USERNAME + ':' + process.env.RESMATE_AUTH_KEY).toString('base64')}`
+        };
     }
 
     async getVoiceInbox(phone_number: string) {
