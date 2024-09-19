@@ -1,0 +1,84 @@
+name: AWS ECR Build - Optional by Tag
+
+on:
+  workflow_call:
+    inputs:
+      tag:
+        required: false
+        type: string
+        default: 'none'
+      nodeVersion:
+        required: false
+        type: string
+        default: '22.1'
+      registry_url:
+        required: true
+        type: string
+      build_name:
+        required: true
+        type: string
+      api_ecr_name:
+        required: true
+        type: string
+      env:
+        required: true
+        type: string
+    secrets:
+      AWS_ACCESS_KEY_ID:
+        required: true
+      AWS_SECRET_ACCESS_KEY:
+        required: true
+      AWS_REGION:
+        required: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    environment: ${{ inputs.env }}
+    steps:
+      - name: Checkout Actions
+        if: ${{ inputs.tag != 'none' }}
+        uses: actions/checkout@v4
+        with:
+          ref: refs/tags/${{ inputs.tag }}
+      - name: Checkout Actions
+        if: ${{ inputs.tag == 'none' }}
+        uses: actions/checkout@v4
+      - name: Setup NodeJS
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ inputs.nodeVersion }}
+      - name: Cache node modules
+        uses: actions/cache@v4
+        with:
+          path: ~/.npm
+          key: ${{ runner.os }}-node-modules-${{ hashFiles('**/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-node-modules-
+      - name: Install dependencies
+        run: npm install
+      - name: Create Build
+        run: npm run build ${{ inputs.build_name }}
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ secrets.AWS_REGION }}
+      - name: Login to Amazon ECR
+        uses: aws-actions/amazon-ecr-login@v2
+      - name: print
+        run: |
+          echo "registry: ${{ secrets.AWS_ACCESS_KEY_ID}}"
+          echo "registry: ${{ secrets.AWS_SECRET_ACCESS_KEY}}"
+      - name: Build, tag, and push API image
+        env:
+          IMAGE_TAG: ${{ github.sha }}
+          registry_url: ${{ inputs.registry_url }}
+          api_ecr_name: ${{ inputs.api_ecr_name }}
+          build_name: ${{ inputs.build_name }}
+        run: |
+          docker build --file ./apps/$build_name/Dockerfile -t $registry_url/$api_ecr_name:$IMAGE_TAG .
+          docker tag $registry_url/$api_ecr_name:$IMAGE_TAG $registry_url/$api_ecr_name:latest
+          docker push $registry_url/$api_ecr_name:$IMAGE_TAG
+          docker push $registry_url/$api_ecr_name:latest

@@ -1,12 +1,35 @@
 {
   "$schema": "https://json.schemastore.org/nest-cli",
   "collection": "@nestjs/schematics",
-  "sourceRoot": "src",
+  "sourceRoot": "apps/respage-unified-chatbot/src",
   "compilerOptions": {
     "deleteOutDir": true,
-    "assets": [
-      "./prompt",
-      "./node_modules/ffmpeg-static/ffmpeg"
-    ]
+    "webpack": true,
+    "tsConfigPath": "apps/respage-unified-chatbot/tsconfig.app.json"
+  },
+  "monorepo": true,
+  "root": "apps/respage-unified-chatbot",
+  "projects": {
+    "unified-chatbot-api": {
+      "type": "application",
+      "root": "apps/unified-chatbot-api",
+      "entryFile": "main",
+      "sourceRoot": "apps/unified-chatbot-api/src",
+      "compilerOptions": {
+        "tsConfigPath": "apps/unified-chatbot-api/tsconfig.app.json",
+        "assets": [
+          "assets/**/*"
+        ]
+      }
+    },
+    "respage-unified-chatbot": {
+      "type": "application",
+      "root": "apps/respage-unified-chatbot",
+      "entryFile": "main",
+      "sourceRoot": "apps/respage-unified-chatbot/src",
+      "compilerOptions": {
+        "tsConfigPath": "apps/respage-unified-chatbot/tsconfig.app.json"
+      }
+    }
   }
 }

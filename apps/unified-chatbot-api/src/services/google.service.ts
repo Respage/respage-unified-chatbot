@@ -19,7 +19,8 @@ export class GoogleService {
     constructor(@Inject(forwardRef(() => VoiceService)) private voiceService: VoiceService,
                 @Inject(forwardRef(() => OpenAiService)) private openAiService: OpenAiService,
                 @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger) {
-        const credentials = JSON.parse(process.env.GOOGLE_CLOUD_CREDENTIALS);
+        const credentials = JSON.parse(Buffer.from(process.env.GOOGLE_CLOUD_CREDENTIALS, 'base64').toString('utf-8'));
+        logger.info("GOOGLE CREDENTIALS", credentials);
         this.speechToTextClient = new SpeechClient({credentials});
         this.textToSpeechClient = new TextToSpeechClient({credentials})
     }

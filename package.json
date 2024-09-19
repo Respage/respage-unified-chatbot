@@ -1,5 +1,5 @@
 {
-  "name": "respage-unified-chatbot",
+  "name": "unified-chatbot-api",
   "version": "0.0.1",
   "description": "",
   "engines": {
@@ -9,24 +9,23 @@
   "private": true,
   "license": "UNLICENSED",
   "scripts": {
-    "build": "nest build && npm run post-build",
-    "format": "prettier --write \"src/**/*.ts\" \"test/**/*.ts\"",
+    "build": "nest build",
+    "format": "prettier --write \"apps/**/*.ts\" \"libs/**/*.ts\"",
     "start": "nest start",
     "start:dev": "clear && clear && nest start --watch",
     "start:debug": "clear && clear && nest start --debug --watch --insert-brk",
-    "start:prod": "node dist/main",
+    "start:prod": "node dist/apps/respage-unified-chatbot-api/main",
     "lint": "eslint \"{src,apps,libs,test}/**/*.ts\" --fix",
     "test": "jest",
     "test:watch": "jest --watch",
     "test:cov": "jest --coverage",
     "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
-    "test:e2e": "jest --config ./test/jest-e2e.json",
-    "post-build": "mkdir ./dist/bin && cp ./node_modules/ffmpeg-static/ffmpeg ./dist/bin && cp ./prompt ./dist/prompt && cp -r ./assets ./dist/assets"
+    "test:e2e": "jest --config apps/unified-chatbot-api/test/jest-e2e.json",
+    "post-build": "mkdir ./dist/bin && cp -r apps/unified-chatbot-api/src/assets ./dist/apps/respage-unified-chatbot/assets"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.606.0",
     "@aws-sdk/client-transcribe-streaming": "3.569.0",
-    "@deepgram/sdk": "^3.3.1",
     "@google-cloud/speech": "^6.5.0",
     "@google-cloud/text-to-speech": "^5.2.0",
     "@langchain/openai": "^0.0.28",
@@ -83,7 +82,7 @@
       "json",
       "ts"
     ],
-    "rootDir": "src",
+    "rootDir": ".",
     "testRegex": ".*\\.spec\\.ts$",
     "transform": {
       "^.+\\.(t|j)s$": "ts-jest"
@@ -91,7 +90,10 @@
     "collectCoverageFrom": [
       "**/*.(t|j)s"
     ],
-    "coverageDirectory": "../coverage",
-    "testEnvironment": "node"
+    "coverageDirectory": "./coverage",
+    "testEnvironment": "node",
+    "roots": [
+      "<rootDir>/apps/"
+    ]
   }
 }
