@@ -1,4 +1,4 @@
-name: manual-beta-pipeline
+name: manual-beta-pipeline-stage
 
 on:
   workflow_dispatch:
