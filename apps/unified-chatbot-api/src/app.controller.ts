@@ -12,5 +12,10 @@ export class AppController {
   root(@Res() res: Response) {
     res.status(404).send();
   }
+
+  @Get('/v1/health')
+  healthCheck(@Res() res: Response) {
+    res.status(200).send();
+  }
 }
 

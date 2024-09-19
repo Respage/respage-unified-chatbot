@@ -1,0 +1,68 @@
+name: AWS ECS Deploy
+
+on:
+  workflow_call:
+    inputs:
+      tag:
+        required: true
+        type: string
+      imageName:
+        required: true
+        type: string
+      api_container_name:
+        required: true
+        type: string
+      cluster_name:
+        required: true
+        type: string
+      definition_file:
+        required: true
+        type: string
+      check_stability:
+        required: false
+        type: string
+        default: 'true'
+      env:
+        required: true
+        type: string
+    secrets:
+      AWS_ACCESS_KEY_ID:
+        required: true
+      AWS_SECRET_ACCESS_KEY:
+        required: true
+      AWS_REGION:
+        required: true
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment: ${{ inputs.env }}
+    steps:
+      - name: Checkout Actions
+        if: ${{ inputs.tag != 'none' }}
+        uses: actions/checkout@v4
+        with:
+          ref: refs/tags/${{ inputs.tag }}
+      - name: Checkout Actions
+        if: ${{ inputs.tag == 'none' }}
+        uses: actions/checkout@v4
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ secrets.AWS_REGION }}
+      - name: Fill in the new image ID in the Amazon ECS task definition
+        id: task-def
+        uses: aws-actions/amazon-ecs-render-task-definition@v1
+        with:
+          task-definition: ${{ inputs.definition_file }}
+          container-name: ${{ inputs.api_container_name }}
+          image: ${{ inputs.imageName }}
+      - name: Deploy Amazon ECS task definition
+        uses: aws-actions/amazon-ecs-deploy-task-definition@v1
+        with:
+          task-definition: ${{ steps.task-def.outputs.task-definition }}
+          service: ${{ inputs.api_container_name }}
+          cluster: ${{ inputs.cluster_name }}
+          wait-for-service-stability: ${{ inputs.check_stability == 'true' }}
