@@ -1,4 +1,4 @@
-name: manual-beta-pipeline
+name: manual-beta-pipeline-prod
 
 on:
   workflow_dispatch:
@@ -15,13 +15,13 @@ on:
         description: 'Tag'
 
 env:
-  AWS_ENV: stage
+  AWS_ENV: production
   REGISTRY_URL: 694734131052.dkr.ecr.us-east-1.amazonaws.com
-  CLUSTER_NAME: respage-general-stg-ecs
+  CLUSTER_NAME: respage-general-prod-ecs
   ## API ENVs
   API_BUILD_NAME: unified-chatbot-api
-  API_CONTAINER_NAME: unified-chatbot-api-stg
-  API_ECR_NAME: unified-chatbot-api-stg
+  API_CONTAINER_NAME: unified-chatbot-api-prod
+  API_ECR_NAME: unified-chatbot-api-prod
 
 jobs:
   ## Env setup
