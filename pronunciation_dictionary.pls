@@ -10,7 +10,11 @@
     <phoneme>rɛz̩ peɪdʒ</phoneme>
   </lexeme>
   <lexeme>
+    <grapheme>BLVD</grapheme>
+    <alias>boulevard</alias>
+  </lexeme>
+  <lexeme>
     <grapheme>blvd</grapheme>
-    <phoneme>ˈbʊləˌvɑrd</phoneme>
+    <alias>boulevard</alias>
   </lexeme>
 </lexicon>
