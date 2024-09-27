@@ -9,7 +9,7 @@ on:
 
 env:
   AWS_ENV: stg
-  REGISTRY_URL: 694734131052.dkr.ecr.us-east-1.amazonaws.com
+  REGISTRY_URL: 864899828951.dkr.ecr.us-east-1.amazonaws.com
   CLUSTER_NAME: respage-general-stg-ecs
   ## API ENVs
   API_BUILD_NAME: unified-chatbot-api
