@@ -230,12 +230,7 @@ export class ResmateService {
 
     async escalateToHumanContact(call: ActiveCall, custom?: string) {
         const data = {
-            prospect: call.conversation.conversationInfo.prospect || {
-                first_name: call.conversation.conversationInfo.first_name,
-                last_name: call.conversation.conversationInfo.last_name,
-                campaign_id: call.conversation.campaign_id,
-                phone: call.conversation.conversationInfo.prospect.conversationInfo.phone,
-            },
+            prospect_id: call.conversation.conversationInfo.prospect._id,
             conversation: {
                 log: ResmateService.generateConversationLog(call.conversation.getCallHistory())
             },
