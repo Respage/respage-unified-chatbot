@@ -134,7 +134,8 @@ export class VoiceService {
                                 last_name,
                                 email_address,
                                 phone,
-                                interests
+                                interests,
+                                campaign_id
                             },
                             first_name: prospect.first_name,
                             last_name: prospect.last_name,
