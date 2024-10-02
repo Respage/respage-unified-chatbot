@@ -393,6 +393,7 @@ export class OpenAiService {
                         await this.resmateService.escalateToHumanContact(call, params.reason)
                     } catch(e) {
                         this.logger.error({e});
+                        prompt = "[Apologize and tell the user you were unable to contact the office. Ask them if there is any other way you can help.]"
                     }
                 } else {
                     prompt = "[Tell the user you will notify someone at the office and then offer to help them with something else.]";
