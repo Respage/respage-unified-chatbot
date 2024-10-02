@@ -251,7 +251,7 @@ export class ResmateService {
         console.log(result);
     }
 
-    async isDuringOfficeHours(campaign_id: number, time: DateTime = DateTime.now()) {
+    async isDuringOfficeHours(campaign_id: number, timezone: string = 'America/New_York', time: DateTime = DateTime.local({zone: timezone})) {
         const timeISO = time.toISO();
         const response = await axios({
             url: `${process.env.RESMATE_API_URL}/private/settings/${campaign_id}/hours?start=${timeISO}&end=${timeISO}`,
