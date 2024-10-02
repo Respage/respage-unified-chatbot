@@ -84,7 +84,7 @@ export class VoiceService {
             })
             .catch(e => this.logger.error({e}));
 
-        this.resmateService.isDuringOfficeHours(campaign_id, )
+        this.resmateService.isDuringOfficeHours(campaign_id, info.tour_availability.timezone )
             .then((is_during_office_hours) => {
                 call.updateSystemPrompt(null, {is_during_office_hours});
                 this.logger.info("VoiceService startCall getTourTimes isDuringOfficeHours", {call});
@@ -161,7 +161,7 @@ export class VoiceService {
 
                 const {_id, phone} = prospect;
 
-                call.updateSystemPrompt(null, {prospect: {_id, phone}});
+                call.updateSystemPrompt(null, {prospect: {_id, phone, campaign_id}});
 
                 this.logger.info("VoiceService startCall getTourTimes getProspect new prospect", {call});
             })
