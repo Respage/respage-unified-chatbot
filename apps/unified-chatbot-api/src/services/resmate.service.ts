@@ -236,7 +236,7 @@ export class ResmateService {
             },
         };
 
-        const result = await axios({
+        await axios({
             url: `${process.env.RESMATE_API_URL}/private/prospect/escalate`,
             method: 'PUT',
             headers: this.headers,
@@ -247,8 +247,6 @@ export class ResmateService {
                 custom
             }
         });
-
-        console.log(result);
     }
 
     async isDuringOfficeHours(campaign_id: number, timezone: string = 'America/New_York', time: DateTime = DateTime.local({zone: timezone})) {
@@ -258,15 +256,15 @@ export class ResmateService {
             method: 'GET',
             headers: this.headers
         });
-        console.log(response.data?.data);
+
         const hours = response.data?.data?.[0];
 
         if (!hours) {
             return false;
         }
 
-        const open = DateTime.fromFormat(`${time.year} ${time.month} ${time.day} ${hours.start_hour}`, 'y M d t');
-        const close =  DateTime.fromFormat(`${time.year} ${time.month} ${time.day} ${hours.end_hour}`, 'y M d t');
+        const open = DateTime.fromFormat(`${time.year} ${time.month} ${time.day} ${hours.start_hour}`, 'y M d t', {zone: timezone});
+        const close =  DateTime.fromFormat(`${time.year} ${time.month} ${time.day} ${hours.end_hour}`, 'y M d t', {zone: timezone});
 
         if (!open.isValid || !close.isValid) {
             return false;
