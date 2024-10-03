@@ -20,7 +20,7 @@ export class VonageService {
             apiSecret: process.env.VONAGE_API_SECRET,
             privateKey: process.env.VONAGE_PRIVATE_KEY.replace(/\\n/g, '\n')
         });
-        this.logger.info("VONAGE PRIVATE KEY", {key: process.env.VONAGE_PRIVATE_KEY.replace(/\\n/g, '\n')})
+
         this.vonage = new Vonage(this.credentials);
     }
 
@@ -42,6 +42,7 @@ export class VonageService {
     }
 
     async forwardCall(call_id: string, fromNumber: string, forwardingNumber: string) {
+        this.logger.info("PRIVATE KEY", {key: this.credentials.privateKey});
         return this.vonage.voice.transferCallWithNCCO(
             call_id,
             [{
