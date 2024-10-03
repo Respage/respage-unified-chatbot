@@ -42,7 +42,6 @@ export class VonageService {
     }
 
     async forwardCall(call_id: string, fromNumber: string, forwardingNumber: string) {
-        this.logger.info("PRIVATE KEY", {key: this.credentials.privateKey});
         return this.vonage.voice.transferCallWithNCCO(
             call_id,
             [{
