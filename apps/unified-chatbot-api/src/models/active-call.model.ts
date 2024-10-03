@@ -114,7 +114,9 @@ export class ActiveCall {
                         if (original_this.doForwardCall) {
                             original_this.doForwardCall = false;
                             try {
+                                voiceService.log("info", `Forwarding call ${original_this.id}`);
                                 await voiceService.forwardCall(original_this);
+                                voiceService.log("info", `Finished forwarding call ${original_this.id}`);
                             } catch (e) {
                                 console.error("ActiveCall callStream"/*, {e}*/);
                                 await openAiService.speakPrompt(callStream, original_this, "[The call could not be forwarded. Apologize to the user and ask if they need anything else.]")
