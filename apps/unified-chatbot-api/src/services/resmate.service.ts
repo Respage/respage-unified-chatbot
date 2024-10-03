@@ -1,9 +1,10 @@
-import winston from "winston";
+import winston, {Logger} from "winston";
 import axios from "axios";
-import {Injectable} from "@nestjs/common";
+import {Inject, Injectable} from "@nestjs/common";
 import {DateTime} from "luxon";
 import {ChatHistoryLog, Conversation, ConversationInfo, PropertyInfo} from "../models/conversation.model";
 import {ActiveCall} from "../models/active-call.model";
+import {WINSTON_MODULE_PROVIDER} from "nest-winston";
 
 export interface UpsertProspectParams {
     _id: string,
@@ -57,7 +58,7 @@ export class ResmateService {
         ]
     }
 
-    constructor() {
+    constructor(@Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger) {
         this.headers = {
             Authorization: `Basic ${Buffer.from(process.env.RESMATE_AUTH_USERNAME + ':' + process.env.RESMATE_AUTH_KEY).toString('base64')}`
         };
@@ -267,9 +268,10 @@ export class ResmateService {
         const close =  DateTime.fromFormat(`${time.year} ${time.month} ${time.day} ${hours.end_hour}`, 'y M d t', {zone: timezone});
 
         if (!open.isValid || !close.isValid) {
+            this.logger.error("isDuringOfficeHours open and / or close not valid", {open, close});
             return false;
         }
-
+        this.logger.info("isDuringOfficeHours", {open, close});
         return +open < +time && +close > +time;
     }
 }
