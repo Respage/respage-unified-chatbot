@@ -20,7 +20,7 @@ export class VonageService {
             apiSecret: process.env.VONAGE_API_SECRET,
             privateKey: process.env.VONAGE_PRIVATE_KEY.replace(/\\n/g, '\n')
         });
-        this.logger.info("VONAGE PRIVATE KEY", process.env.VONAGE_PRIVATE_KEY.replace(/\\n/g, '\n'))
+        this.logger.info("VONAGE PRIVATE KEY", {key: process.env.VONAGE_PRIVATE_KEY.replace(/\\n/g, '\n')})
         this.vonage = new Vonage(this.credentials);
     }
 
