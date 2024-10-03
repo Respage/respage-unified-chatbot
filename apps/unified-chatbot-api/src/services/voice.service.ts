@@ -278,4 +278,8 @@ export class VoiceService {
     getActiveCall(id: string) {
         return this.activeCalls[id];
     }
+
+    log(level: 'info' | 'error', message: string, data: any = null) {
+        this.logger[level](message, data);
+    }
 }
