@@ -1,9 +1,10 @@
-import winston from "winston";
+import winston, {Logger} from "winston";
 import axios from "axios";
-import {Injectable} from "@nestjs/common";
+import {Inject, Injectable} from "@nestjs/common";
 import {DateTime} from "luxon";
 import {ChatHistoryLog, Conversation, ConversationInfo, PropertyInfo} from "../models/conversation.model";
 import {ActiveCall} from "../models/active-call.model";
+import {WINSTON_MODULE_PROVIDER} from "nest-winston";
 
 export interface UpsertProspectParams {
     _id: string,
@@ -57,7 +58,7 @@ export class ResmateService {
         ]
     }
 
-    constructor() {
+    constructor(@Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger) {
         this.headers = {
             Authorization: `Basic ${Buffer.from(process.env.RESMATE_AUTH_USERNAME + ':' + process.env.RESMATE_AUTH_KEY).toString('base64')}`
         };
@@ -236,7 +237,7 @@ export class ResmateService {
             },
         };
 
-        const result = await axios({
+        await axios({
             url: `${process.env.RESMATE_API_URL}/private/prospect/escalate`,
             method: 'PUT',
             headers: this.headers,
@@ -247,8 +248,6 @@ export class ResmateService {
                 custom
             }
         });
-
-        console.log(result);
     }
 
     async isDuringOfficeHours(campaign_id: number, timezone: string = 'America/New_York', time: DateTime = DateTime.local({zone: timezone})) {
@@ -258,20 +257,21 @@ export class ResmateService {
             method: 'GET',
             headers: this.headers
         });
-        console.log(response.data?.data);
+
         const hours = response.data?.data?.[0];
 
         if (!hours) {
             return false;
         }
 
-        const open = DateTime.fromFormat(`${time.year} ${time.month} ${time.day} ${hours.start_hour}`, 'y M d t');
-        const close =  DateTime.fromFormat(`${time.year} ${time.month} ${time.day} ${hours.end_hour}`, 'y M d t');
+        const open = DateTime.fromFormat(`${time.year} ${time.month} ${time.day} ${hours.start_hour}`, 'y M d t', {zone: timezone});
+        const close =  DateTime.fromFormat(`${time.year} ${time.month} ${time.day} ${hours.end_hour}`, 'y M d t', {zone: timezone});
 
         if (!open.isValid || !close.isValid) {
+            this.logger.error("isDuringOfficeHours open and / or close not valid", {open, close});
             return false;
         }
-
+        this.logger.info("isDuringOfficeHours", {open, close});
         return +open < +time && +close > +time;
     }
 }
