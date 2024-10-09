@@ -632,7 +632,7 @@ export class OpenAiService {
             messages: [
                 {
                     role: 'system',
-                    content: `You analyze chat conversations with prospective renters at multifamily properties and collect relevant data. Today's date is ${(new Date()).toString().split(/\d\d:\d\d:\d\d/)[0].trim()}.`
+                    content: `You analyze chat conversations with prospective renters at multifamily properties and collect relevant data. Only collect data from the text you are given. Today's date is ${(new Date()).toString().split(/\d\d:\d\d:\d\d/)[0].trim()}.`
                 },
                 ...call.getCallHistory()
             ],
