@@ -1,16 +1,17 @@
-import winston from "winston";
-import {Injectable} from '@nestjs/common';
+import winston, {Logger} from "winston";
+import {Inject, Injectable} from '@nestjs/common';
 import {Auth} from '@vonage/auth';
 import {Vonage} from "@vonage/server-sdk";
 import axios, {AxiosRequestConfig} from "axios";
 import {ConnectEventType, NCCOActions} from "@vonage/voice";
+import {WINSTON_MODULE_PROVIDER} from "nest-winston";
 
 @Injectable()
 export class VonageService {
     private credentials: Auth;
     private vonage: Vonage
 
-    constructor() {}
+    constructor(@Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger) {}
 
     async onModuleInit() {
         this.credentials = new Auth({
@@ -41,8 +42,6 @@ export class VonageService {
     }
 
     async forwardCall(call_id: string, fromNumber: string, forwardingNumber: string) {
-        console.log("VonageService forwardCall"/*, {call_id, fromNumber, forwardingNumber}*/);
-
         return this.vonage.voice.transferCallWithNCCO(
             call_id,
             [{
