@@ -263,7 +263,7 @@ export class VoiceService {
                 this.logger.error("call onClose", {e});
             }
         });
-
+        delete this.activeCalls[call.conversation_id];
         this.logger.info("VoiceService startCall call started", {call});
     }
 
