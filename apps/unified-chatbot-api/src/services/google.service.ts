@@ -6,11 +6,8 @@ import {Duplex, TransformCallback} from "stream";
 import {VoiceService} from "./voice.service";
 import {ActiveCall, DONE_BUFFER} from "../models/active-call.model";
 import {TextToSpeechClient} from "@google-cloud/text-to-speech";
-import {google} from "@google-cloud/text-to-speech/build/protos/protos";
 import {OpenAiService} from "./open-ai.service";
 import {WINSTON_MODULE_PROVIDER} from "nest-winston";
-import {google} from "@google-cloud/speech/build/protos/protos";
-import AudioEncoding = google.cloud.speech.v2.ExplicitDecodingConfig.AudioEncoding;
 
 @Injectable()
 export class GoogleService {
@@ -41,10 +38,10 @@ export class GoogleService {
                         call.startTyping().then();
 
                         const [result] = await original_this.speechToTextClient.recognize({
-                            audio: {content: Buffer.concat(chunks)},
+                            content: Buffer.concat(chunks),
                             config: {
                                 explicitDecodingConfig: {
-                                    encoding: AudioEncoding.LINEAR16,
+                                    encoding: 'LINEAR16',
                                     sampleRateHertz: 16000,
                                 },
                                 languageCodes: ['en-US'],
