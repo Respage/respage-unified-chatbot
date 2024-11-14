@@ -1,7 +1,7 @@
 import winston, {Logger} from "winston";
 import {forwardRef, Inject, Injectable} from '@nestjs/common';
 
-import {SpeechClient} from '@google-cloud/speech';
+import {v2} from '@google-cloud/speech';
 import {Duplex, TransformCallback} from "stream";
 import {VoiceService} from "./voice.service";
 import {ActiveCall, DONE_BUFFER} from "../models/active-call.model";
@@ -13,7 +13,7 @@ import {WINSTON_MODULE_PROVIDER} from "nest-winston";
 
 @Injectable()
 export class GoogleService {
-    private speechToTextClient: SpeechClient;
+    private speechToTextClient: v2.SpeechClient;
     private textToSpeechClient: TextToSpeechClient;
 
     constructor(@Inject(forwardRef(() => VoiceService)) private voiceService: VoiceService,
@@ -21,7 +21,7 @@ export class GoogleService {
                 @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger) {
         const credentials = JSON.parse(Buffer.from(process.env.GOOGLE_CLOUD_CREDENTIALS, 'base64').toString('utf-8'));
         logger.info("GOOGLE CREDENTIALS", credentials);
-        this.speechToTextClient = new SpeechClient({credentials});
+        this.speechToTextClient = new v2.SpeechClient({credentials});
         this.textToSpeechClient = new TextToSpeechClient({credentials})
     }
 
