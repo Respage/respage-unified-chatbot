@@ -1,4 +1,4 @@
-import winston, {Logger} from "winston";
+import {Logger} from "winston";
 import {forwardRef, Inject, Injectable} from '@nestjs/common';
 
 import {v2} from '@google-cloud/speech';
@@ -7,9 +7,10 @@ import {VoiceService} from "./voice.service";
 import {ActiveCall, DONE_BUFFER} from "../models/active-call.model";
 import {TextToSpeechClient} from "@google-cloud/text-to-speech";
 import {google} from "@google-cloud/text-to-speech/build/protos/protos";
-import AudioEncoding = google.cloud.texttospeech.v1.AudioEncoding;
 import {OpenAiService} from "./open-ai.service";
 import {WINSTON_MODULE_PROVIDER} from "nest-winston";
+import {google} from "@google-cloud/speech/build/protos/protos";
+import AudioEncoding = google.cloud.speech.v2.ExplicitDecodingConfig.AudioEncoding;
 
 @Injectable()
 export class GoogleService {
@@ -42,10 +43,11 @@ export class GoogleService {
                         const [result] = await original_this.speechToTextClient.recognize({
                             audio: {content: Buffer.concat(chunks)},
                             config: {
-                                encoding: 'LINEAR16',
-                                sampleRateHertz: 16000,
-                                languageCode: 'en-US',
-                                useEnhanced: true,
+                                explicitDecodingConfig: {
+                                    encoding: AudioEncoding.LINEAR16,
+                                    sampleRateHertz: 16000,
+                                },
+                                languageCodes: ['en-US'],
                                 model: 'phone_call',
                             },
                         });
