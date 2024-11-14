@@ -39,7 +39,7 @@ export class GoogleService {
                         call.startTyping().then();
 
                         const [result] = await original_this.speechToTextClient.recognize({
-                            content: Buffer.concat(chunks),
+                            content: new Uint8Array(Buffer.concat(chunks)),
                             config: {
                                 explicitDecodingConfig: {
                                     encoding: 'LINEAR16',
