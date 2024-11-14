@@ -6,6 +6,7 @@ import {Duplex, TransformCallback} from "stream";
 import {VoiceService} from "./voice.service";
 import {ActiveCall, DONE_BUFFER} from "../models/active-call.model";
 import {TextToSpeechClient} from "@google-cloud/text-to-speech";
+import {google as googleTextToSpeech} from "@google-cloud/text-to-speech/build/protos/protos";
 import {OpenAiService} from "./open-ai.service";
 import {WINSTON_MODULE_PROVIDER} from "nest-winston";
 
@@ -156,7 +157,7 @@ export class GoogleService {
                     input: {text},
                     voice: {languageCode: 'en-US', ssmlGender: 'NEUTRAL'},
                     audioConfig: {
-                        audioEncoding: AudioEncoding.LINEAR16,
+                        audioEncoding: googleTextToSpeech.cloud.texttospeech.v1.AudioEncoding.LINEAR16,
                         sampleRateHertz: 16000
                     }
                 });
