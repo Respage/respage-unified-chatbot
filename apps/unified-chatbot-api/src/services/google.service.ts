@@ -39,15 +39,15 @@ export class GoogleService {
                         call.startTyping().then();
 
                         const [result] = await original_this.speechToTextClient.recognize({
-                            content: new Uint8Array(Buffer.concat(chunks)),
+                            audio: {
+                                content: new Uint8Array(Buffer.concat(chunks)),
+                            },
                             config: {
-                                explicitDecodingConfig: {
-                                    encoding: 'LINEAR16',
-                                    sampleRateHertz: 16000,
-                                },
+                                encoding: 'LINEAR16',
+                                sampleRateHertz: 16000,
                                 languageCodes: ['en-US'],
                                 model: 'phone_call',
-                            },
+                            }
                         });
                         chunks = [];
                         const transcript = result?.results?.find(r => r?.alternatives?.find(a => !!a.transcript && a.confidence > 0.5));
