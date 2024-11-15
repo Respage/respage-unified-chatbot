@@ -45,10 +45,10 @@ export class GoogleService {
                         });
                         chunks = [];
                         const transcript = result?.results
-                            ?.reduce((acc, val) => val?.alternatives?.length ? [...acc, ...val] : acc, [])
-                            .sort((a, b) => b.confidence - a.confidence)[0];
+                            ?.reduce((acc, val) => val?.alternatives?.length ? [...acc, ...val.alternatives] : acc, [])
+                            .sort((a, b) => b.confidence - a.confidence)[0]?.transcript;
                         if (transcript) {
-                            stream.push(result?.results?.[0]?.alternatives?.[0]?.transcript);
+                            stream.push(transcript);
                             stream.push(DONE_BUFFER);
                         } else {
                             original_this.logger.error("GoogleService getSpeechToTextStream recognize did not return valid value", {result});
