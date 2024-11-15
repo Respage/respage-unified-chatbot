@@ -48,7 +48,7 @@ export class GoogleService {
                                 languageCodes: ['en-US'],
                                 model: 'phone_call',
                             }
-                        });
+                        } as any);
                         chunks = [];
                         const transcript = result?.results?.find(r => r?.alternatives?.find(a => !!a.transcript && a.confidence > 0.5));
                         if (transcript) {
