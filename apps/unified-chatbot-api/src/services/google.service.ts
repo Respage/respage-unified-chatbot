@@ -41,15 +41,7 @@ export class GoogleService {
 
                         const [result] = await original_this.speechToTextClient.recognize({
                             content: new Uint8Array(Buffer.concat(chunks)),
-                            config: {
-                                explicitDecodingConfig: {
-                                    audioChannelCount: 1,
-                                    encoding: googleSpeechToText.cloud.speech.v2.ExplicitDecodingConfig.AudioEncoding.LINEAR16,
-                                    sampleRateHertz: 16000,
-                                },
-                                languageCodes: ['en-US'],
-                                model: 'phone_call',
-                            },
+                            recognizer: 'projects/respage-app/locations/global/recognizers/respage-unified-chatbot-phone-call-recognizer',
                         });
                         chunks = [];
                         const transcript = result?.results?.find(r => r?.alternatives?.find(a => !!a.transcript && a.confidence > 0.5));
