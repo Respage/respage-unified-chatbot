@@ -50,7 +50,9 @@ export class GoogleService {
                             },
                         });
                         chunks = [];
-                        const transcript = result?.results?.find(r => r?.alternatives?.find(a => !!a.transcript && a.confidence > 0.5));
+                        const transcript = result?.results
+                            ?.reduce((acc, val) => val?.alternatives?.length ? [...acc, ...val] : acc, [])
+                            .sort((a, b) => b.confidence - a.confidence)[0];
                         if (transcript) {
                             stream.push(result?.results?.[0]?.alternatives?.[0]?.transcript);
                             stream.push(DONE_BUFFER);
