@@ -7,6 +7,7 @@ import {VoiceService} from "./voice.service";
 import {ActiveCall, DONE_BUFFER} from "../models/active-call.model";
 import {TextToSpeechClient} from "@google-cloud/text-to-speech";
 import {google as googleTextToSpeech} from "@google-cloud/text-to-speech/build/protos/protos";
+import {google as googleSpeechToText} from "@google-cloud/speech/build/protos/protos";
 import {OpenAiService} from "./open-ai.service";
 import {WINSTON_MODULE_PROVIDER} from "nest-winston";
 
@@ -39,16 +40,17 @@ export class GoogleService {
                         call.startTyping().then();
 
                         const [result] = await original_this.speechToTextClient.recognize({
-                            audio: {
-                                content: new Uint8Array(Buffer.concat(chunks)),
-                            },
+                            content: new Uint8Array(Buffer.concat(chunks)),
                             config: {
-                                encoding: 'LINEAR16',
-                                sampleRateHertz: 16000,
+                                explicitDecodingConfig: {
+                                    audioChannelCount: 1,
+                                    encoding: googleSpeechToText.cloud.speech.v2.ExplicitDecodingConfig.AudioEncoding.LINEAR16,
+                                    sampleRateHertz: 16000,
+                                },
                                 languageCodes: ['en-US'],
                                 model: 'phone_call',
-                            }
-                        } as any);
+                            },
+                        });
                         chunks = [];
                         const transcript = result?.results?.find(r => r?.alternatives?.find(a => !!a.transcript && a.confidence > 0.5));
                         if (transcript) {
