@@ -41,7 +41,7 @@ export class GoogleService {
 
                         const [result] = await original_this.speechToTextClient.recognize({
                             content: new Uint8Array(Buffer.concat(chunks)),
-                            recognizer: 'projects/respage-app/locations/global/recognizers/respage-unified-chatbot-chirp-phone-call-recognizer',
+                            recognizer: 'projects/respage-app/locations/us-central1/recognizers/respage-unified-chatbot-chirp-phone-call-recognizer',
                         });
                         chunks = [];
                         const transcript = result?.results
