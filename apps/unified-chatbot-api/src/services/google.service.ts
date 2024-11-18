@@ -55,7 +55,7 @@ export class GoogleService {
                             call.promptAI("Apologize, say you didn't catch that, and ask them to repeat themselves. Suggest they try using more words.");
                         }
                     } catch (e) {
-                        original_this.logger.error(e);
+                        original_this.logger.error('Google speech to text stream: failed to recognize', {e});
                         call.promptAI("Apologize because something has gone wrong and ask the user to try again.");
                         callback();
                         return;
