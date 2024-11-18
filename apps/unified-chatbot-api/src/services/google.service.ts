@@ -21,7 +21,7 @@ export class GoogleService {
                 @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger) {
         const credentials = JSON.parse(Buffer.from(process.env.GOOGLE_CLOUD_CREDENTIALS, 'base64').toString('utf-8'));
         logger.info("GOOGLE CREDENTIALS", credentials);
-        this.speechToTextClient = new v2.SpeechClient({credentials});
+        this.speechToTextClient = new v2.SpeechClient({...credentials, apiEndpoint: 'us-central1-speech.googleapis.com'});
         this.textToSpeechClient = new TextToSpeechClient({credentials})
     }
 
