@@ -1,19 +1,19 @@
-import winston, {Logger} from "winston";
+import {Logger} from "winston";
 import {forwardRef, Inject, Injectable} from '@nestjs/common';
 
-import {SpeechClient} from '@google-cloud/speech';
+import {v2} from '@google-cloud/speech';
 import {Duplex, TransformCallback} from "stream";
 import {VoiceService} from "./voice.service";
 import {ActiveCall, DONE_BUFFER} from "../models/active-call.model";
 import {TextToSpeechClient} from "@google-cloud/text-to-speech";
-import {google} from "@google-cloud/text-to-speech/build/protos/protos";
-import AudioEncoding = google.cloud.texttospeech.v1.AudioEncoding;
+import {google as googleTextToSpeech} from "@google-cloud/text-to-speech/build/protos/protos";
+import {google as googleSpeechToText} from "@google-cloud/speech/build/protos/protos";
 import {OpenAiService} from "./open-ai.service";
 import {WINSTON_MODULE_PROVIDER} from "nest-winston";
 
 @Injectable()
 export class GoogleService {
-    private speechToTextClient: SpeechClient;
+    private speechToTextClient: v2.SpeechClient;
     private textToSpeechClient: TextToSpeechClient;
 
     constructor(@Inject(forwardRef(() => VoiceService)) private voiceService: VoiceService,
@@ -21,7 +21,7 @@ export class GoogleService {
                 @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger) {
         const credentials = JSON.parse(Buffer.from(process.env.GOOGLE_CLOUD_CREDENTIALS, 'base64').toString('utf-8'));
         logger.info("GOOGLE CREDENTIALS", credentials);
-        this.speechToTextClient = new SpeechClient({credentials});
+        this.speechToTextClient = new v2.SpeechClient({...credentials, apiEndpoint: 'https://us-central1-speech.googleapis.com'});
         this.textToSpeechClient = new TextToSpeechClient({credentials})
     }
 
@@ -40,14 +40,8 @@ export class GoogleService {
                         call.startTyping().then();
 
                         const [result] = await original_this.speechToTextClient.recognize({
-                            audio: {content: Buffer.concat(chunks)},
-                            config: {
-                                encoding: 'LINEAR16',
-                                sampleRateHertz: 16000,
-                                languageCode: 'en-US',
-                                useEnhanced: true,
-                                model: 'phone_call',
-                            },
+                            content: new Uint8Array(Buffer.concat(chunks)),
+                            recognizer: 'projects/respage-app/locations/us-central1/recognizers/respage-unified-chatbot-chirp-phone-call-recognizer',
                         });
                         chunks = [];
                         const transcript = result?.results
@@ -61,7 +55,7 @@ export class GoogleService {
                             call.promptAI("Apologize, say you didn't catch that, and ask them to repeat themselves. Suggest they try using more words.");
                         }
                     } catch (e) {
-                        original_this.logger.error(e);
+                        original_this.logger.error('Google speech to text stream: failed to recognize', {e});
                         call.promptAI("Apologize because something has gone wrong and ask the user to try again.");
                         callback();
                         return;
@@ -159,7 +153,7 @@ export class GoogleService {
                     input: {text},
                     voice: {languageCode: 'en-US', ssmlGender: 'NEUTRAL'},
                     audioConfig: {
-                        audioEncoding: AudioEncoding.LINEAR16,
+                        audioEncoding: googleTextToSpeech.cloud.texttospeech.v1.AudioEncoding.LINEAR16,
                         sampleRateHertz: 16000
                     }
                 });
