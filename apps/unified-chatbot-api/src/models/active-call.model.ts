@@ -174,7 +174,7 @@ export class ActiveCall {
             ]).catch(e => {
                 console.error("activeCall pipeline"/*, {e}*/);
             });
-        }, callStartDelay);
+        }, callStartDelay * 1000);
     }
 
     // Interface methods
