@@ -91,6 +91,7 @@ export class ActiveCall {
          systemPrompData: { property: PropertyInfo, conversation: ConversationInfo },
          openAiService: OpenAiService,
          voiceService: VoiceService,
+         callStartDelay: number = 0
     ) {
         console.log('ActiveCall init'/*, {call: this}*/);
         const original_this = this;
@@ -161,18 +162,20 @@ export class ActiveCall {
 
         this.aIStream = AI;
 
-        this.promptAI("Introduce yourself, mention the name of the property, and ask the caller for their name if you don't know it already.");
+        this.stopListening();
+        setTimeout(() => {
+            this.promptAI("Introduce yourself, mention the name of the property, and ask the caller for their name if you don't know it already.");
 
-        pipeline([
-            this.streamAudioOnSpeech(callStream) as any,
-            speechToText,
-            AI,
-            textToSpeech,
-            callStream
-        ])
-        .catch(e => {
-            console.error("activeCall pipeline"/*, {e}*/);
-        });
+            pipeline([
+                this.streamAudioOnSpeech(callStream) as any,
+                speechToText,
+                AI,
+                textToSpeech,
+                callStream
+            ]).catch(e => {
+                console.error("activeCall pipeline"/*, {e}*/);
+            });
+        }, callStartDelay * 1000);
     }
 
     // Interface methods

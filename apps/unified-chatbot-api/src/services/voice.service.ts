@@ -177,7 +177,8 @@ export class VoiceService {
                 conversation: {phone: from_number}
             },
             this.openAIService,
-            this
+            this,
+            info.voice_call_start_delay || 0
         );
 
         call.onClose(async () => {
