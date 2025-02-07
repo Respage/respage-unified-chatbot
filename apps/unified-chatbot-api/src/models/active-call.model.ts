@@ -333,6 +333,11 @@ export class ActiveCall {
     }
 
     requestNameOrSMSConsent() {
+        if (!this.conversation.user_replied) {
+            this.conversation.user_replied = true;
+            return;
+        }
+
         if (this.conversation.conversationInfo.requested_name &&
             this.conversation.conversationInfo.requested_sms_consent) {
             return;
