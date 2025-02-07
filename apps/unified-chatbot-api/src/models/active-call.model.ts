@@ -141,6 +141,8 @@ export class ActiveCall {
                         websocket.send(subArray);
                         await (new Promise(resolve => setTimeout(resolve, 18)))
                     }
+
+                    await original_this.requestNameOrSMSConsent(callStream, openAiService);
                 }
 
                 callback()
@@ -328,6 +330,27 @@ export class ActiveCall {
         //this.playAmbiant().then();
         this.doStopTyping = true;
         this.playingTyping = -1;
+    }
+
+    async requestNameOrSMSConsent(callStream: Duplex, openAiService: OpenAiService) {
+        if (this.conversation.conversationInfo.requested_name &&
+            this.conversation.conversationInfo.requested_sms_consent) {
+            return;
+        }
+
+        if (!this.conversation.conversationInfo.requested_name) {
+            if (!this.conversation.conversationInfo.requested_sms_consent) {
+                this.conversation.conversationInfo.requested_name = true;
+                this.conversation.conversationInfo.requested_sms_consent = true;
+                await openAiService.speakPrompt(callStream, this, "[Ask the caller for their name and ask if they consent to receiving SMS messages.]");
+            } else {
+                this.conversation.conversationInfo.requested_name = true;
+                await openAiService.speakPrompt(callStream, this, "[Ask the caller for their name.]");
+            }
+        } else {
+            this.conversation.conversationInfo.requested_sms_consent = true;
+            await openAiService.speakPrompt(callStream, this, "[Ask the caller if they consent to receiving SMS messages.]");
+        }
     }
 
     updateCallHistory(message: ChatHistoryLog) {

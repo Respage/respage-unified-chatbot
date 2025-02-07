@@ -44,6 +44,8 @@ export interface ConversationInfo {
     unit_type?: string;
     interests?: string[];
     is_during_office_hours?: boolean;
+    requested_name?: boolean;
+    requested_sms_consent?: boolean;
 }
 
 export type ChatHistoryLog = ChatCompletionMessageParam & { timestamp?: Date };
