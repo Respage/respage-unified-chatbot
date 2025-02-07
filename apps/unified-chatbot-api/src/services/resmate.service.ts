@@ -133,11 +133,11 @@ export class ResmateService {
         return response.data.data;
     }
 
-    async addConversation(call: ActiveCall) {
+    async addConversation(prospect_id: string, call: ActiveCall) {
         const callHistory = call.conversation.getCallHistory();
         const response = await axios({
             method: "POST",
-            url: `${process.env.RESMATE_API_URL}/private/conversation/${call.conversation.campaign_id}/${call.conversation.conversationInfo.prospect._id}`,
+            url: `${process.env.RESMATE_API_URL}/private/conversation/${call.conversation.campaign_id}/${prospect_id}`,
             data: {
                 type: 'voice',
                 contact: {user_phone: call.conversation.conversationInfo.phone},

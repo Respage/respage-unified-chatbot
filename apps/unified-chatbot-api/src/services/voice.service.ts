@@ -193,7 +193,7 @@ export class VoiceService {
                     value: i
                 }));
 
-                await this.resmateService.upsertProspect(
+                const prospect = await this.resmateService.upsertProspect(
                     call.conversation.campaign_id,
                     {
                         ...call.conversation.conversationInfo.prospect,
@@ -206,7 +206,7 @@ export class VoiceService {
                     }
                 );
 
-                const conversation = await this.resmateService.addConversation(call);
+                await this.resmateService.addConversation(prospect._id, call);
 
                 try {
                     if (user_info.tour_date_time && user_info.tour_confirmed && user_info.tour_scheduled) {
