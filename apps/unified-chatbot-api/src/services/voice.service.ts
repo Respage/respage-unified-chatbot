@@ -152,18 +152,7 @@ export class VoiceService {
                     return;
                 }
 
-                prospect = await this.resmateService.upsertProspect(campaign_id, {
-                    campaign_id,
-                    locale: 'en-US',
-                    attribution_type: 'voice',
-                    attribution_value: 'voice',
-                    phone: from_number,
-                    timezone: info.tour_availability.timezone
-                });
-
-                const {_id, phone} = prospect;
-
-                call.updateSystemPrompt(null, {prospect: {_id, phone, campaign_id}});
+                call.updateSystemPrompt(null, {prospect: {phone: from_number, campaign_id, timezone: info.tour_availability.timezone}});
 
                 this.logger.info("VoiceService startCall getTourTimes getProspect new prospect", {call});
             })
@@ -213,7 +202,10 @@ export class VoiceService {
                         ...user_info,
                         interests,
                         conversation_id: conversation._id,
-                        conversation_type: 'voice'
+                        conversation_type: 'voice',
+                        locale: 'en-US',
+                        attribution_type: 'voice',
+                        attribution_value: 'voice',
                     }
                 );
 
