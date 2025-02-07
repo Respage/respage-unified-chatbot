@@ -63,6 +63,7 @@ export class Conversation {
     propertyInfo: PropertyInfo;
     conversationInfo: ConversationInfo;
     timezone: string;
+    user_replied: boolean;
 
     private systemPrompt: ChatCompletionMessageParam;
 
