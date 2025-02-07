@@ -142,7 +142,7 @@ export class ActiveCall {
                         await (new Promise(resolve => setTimeout(resolve, 18)))
                     }
 
-                    await original_this.requestNameOrSMSConsent();
+                    original_this.requestNameOrSMSConsent();
                 }
 
                 callback()
@@ -332,7 +332,7 @@ export class ActiveCall {
         this.playingTyping = -1;
     }
 
-    requestNameOrSMSConsent(callStream: Duplex, openAiService: OpenAiService) {
+    requestNameOrSMSConsent() {
         if (this.conversation.conversationInfo.requested_name &&
             this.conversation.conversationInfo.requested_sms_consent) {
             return;
