@@ -178,8 +178,6 @@ export class VoiceService {
                     user_info.move_in_date = ActiveCall.compileTourDateTime(call.conversation.timezone, user_info.move_in_day, user_info.move_in_month, user_info.move_in_year);
                 }
 
-                const conversation = await this.resmateService.addConversation(call);
-
                 let interestStrings = [];
                 if (Array.isArray(user_info.interests) && user_info.interests.length) {
                     interestStrings = user_info.interests.map(i => i.trim()).filter(i => !!i);
@@ -199,13 +197,14 @@ export class VoiceService {
                         ...call.conversation.conversationInfo.prospect,
                         ...user_info,
                         interests,
-                        conversation_id: conversation._id,
                         conversation_type: 'voice',
                         locale: 'en-US',
                         attribution_type: 'voice',
                         attribution_value: 'voice',
                     }
                 );
+
+                const conversation = await this.resmateService.addConversation(call);
 
                 try {
                     if (user_info.tour_date_time && user_info.tour_confirmed && user_info.tour_scheduled) {
