@@ -197,14 +197,22 @@ export class VoiceService {
                         ...call.conversation.conversationInfo.prospect,
                         ...user_info,
                         interests,
-                        conversation_type: 'voice',
                         locale: 'en-US',
                         attribution_type: 'voice',
                         attribution_value: 'voice',
                     }
                 );
 
-                await this.resmateService.addConversation(prospect._id, call);
+                const conversation = await this.resmateService.addConversation(prospect._id, call);
+
+                await this.resmateService.upsertProspect(
+                    call.conversation.campaign_id,
+                    {
+                        _id: prospect._id,
+                        conversation_id: conversation._id,
+                        conversation_type: 'voice',
+                    }
+                );
 
                 try {
                     if (user_info.tour_date_time && user_info.tour_confirmed && user_info.tour_scheduled) {
