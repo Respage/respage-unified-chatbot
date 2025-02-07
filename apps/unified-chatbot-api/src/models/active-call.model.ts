@@ -230,6 +230,7 @@ export class ActiveCall {
                     if (original_this.sampleCrossesThreshold(chunk, -1)) {
                         original_this.strikes++
                         if (original_this.strikes >= STOP_TALKING_THRESHOLD) {
+                            original_this.conversation.user_replied = true;
                             yield DONE_BUFFER;
                         }
                     } else {
@@ -334,7 +335,6 @@ export class ActiveCall {
 
     requestNameOrSMSConsent() {
         if (!this.conversation.user_replied) {
-            this.conversation.user_replied = true;
             return;
         }
 
