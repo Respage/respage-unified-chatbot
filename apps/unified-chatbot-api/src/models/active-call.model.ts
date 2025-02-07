@@ -166,7 +166,7 @@ export class ActiveCall {
 
         this.stopListening();
         setTimeout(() => {
-            this.promptAI("Introduce yourself, mention the name of the property, and ask the caller for their name if you don't know it already.");
+            this.promptAI("Introduce yourself, mention the name of the property.");
 
             pipeline([
                 this.streamAudioOnSpeech(callStream) as any,
