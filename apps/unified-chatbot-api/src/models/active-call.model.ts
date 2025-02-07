@@ -142,7 +142,7 @@ export class ActiveCall {
                         await (new Promise(resolve => setTimeout(resolve, 18)))
                     }
 
-                    await original_this.requestNameOrSMSConsent(callStream, openAiService);
+                    await original_this.requestNameOrSMSConsent();
                 }
 
                 callback()
@@ -332,7 +332,7 @@ export class ActiveCall {
         this.playingTyping = -1;
     }
 
-    async requestNameOrSMSConsent(callStream: Duplex, openAiService: OpenAiService) {
+    requestNameOrSMSConsent(callStream: Duplex, openAiService: OpenAiService) {
         if (this.conversation.conversationInfo.requested_name &&
             this.conversation.conversationInfo.requested_sms_consent) {
             return;
@@ -342,14 +342,14 @@ export class ActiveCall {
             if (!this.conversation.conversationInfo.requested_sms_consent) {
                 this.conversation.conversationInfo.requested_name = true;
                 this.conversation.conversationInfo.requested_sms_consent = true;
-                await openAiService.speakPrompt(callStream, this, "[Ask the caller for their name and ask if they consent to receiving SMS messages.]");
+                this.promptAI("Ask the caller for their name and ask if they consent to receiving SMS messages.");
             } else {
                 this.conversation.conversationInfo.requested_name = true;
-                await openAiService.speakPrompt(callStream, this, "[Ask the caller for their name.]");
+                this.promptAI("Ask the caller for their name.");
             }
         } else {
             this.conversation.conversationInfo.requested_sms_consent = true;
-            await openAiService.speakPrompt(callStream, this, "[Ask the caller if they consent to receiving SMS messages.]");
+            this.promptAI("Ask the caller if they consent to receiving SMS messages.");
         }
     }
 
