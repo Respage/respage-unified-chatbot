@@ -338,23 +338,14 @@ export class ActiveCall {
             return;
         }
 
-        if (this.conversation.conversationInfo.requested_name &&
-            this.conversation.conversationInfo.requested_sms_consent) {
-            return;
-        }
-
         if (!this.conversation.conversationInfo.requested_name) {
-            if (!this.conversation.conversationInfo.requested_sms_consent) {
-                this.conversation.conversationInfo.requested_name = true;
-                this.conversation.conversationInfo.requested_sms_consent = true;
-                this.promptAI("Ask the caller for their name and ask if they consent to receiving SMS messages.");
-            } else {
-                this.conversation.conversationInfo.requested_name = true;
-                this.promptAI("Ask the caller for their name.");
-            }
+            this.conversation.conversationInfo.requested_name = true;
+            this.promptAI("Ask the caller for their name.");
         } else {
-            this.conversation.conversationInfo.requested_sms_consent = true;
-            this.promptAI("Ask the caller if they consent to receiving SMS messages.");
+            if (!this.conversation.conversationInfo.requested_sms_consent) {
+                this.conversation.conversationInfo.requested_sms_consent = true;
+                this.promptAI("Ask the caller if they consent to receiving SMS messages.");
+            }
         }
     }
 
