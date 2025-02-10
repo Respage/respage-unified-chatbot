@@ -143,8 +143,6 @@ export class VoiceService {
                             tour_scheduled: !!tour_date_time,
                             tour_date_time_confirmed: !!tour_date_time,
                             sms_consent: communicationConsent,
-                            requested_name: !!first_name || !!last_name,
-                            requested_sms_consent: communicationConsent
                         }
                     );
 

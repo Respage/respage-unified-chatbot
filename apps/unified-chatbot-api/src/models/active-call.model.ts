@@ -141,8 +141,6 @@ export class ActiveCall {
                         websocket.send(subArray);
                         await (new Promise(resolve => setTimeout(resolve, 18)))
                     }
-
-                    original_this.requestNameOrSMSConsent();
                 }
 
                 callback()
@@ -166,7 +164,11 @@ export class ActiveCall {
 
         this.stopListening();
         setTimeout(() => {
-            this.promptAI("Introduce yourself, mention the name of the property.");
+            if (this.getSMSConsent()) {
+                this.promptAI("Introduce yourself, mention the name of the property.");
+            } else {
+                this.promptAI("Introduce yourself, mention the name of the property, and ask the caller if they consent to receiving SMS messages.");
+            }
 
             pipeline([
                 this.streamAudioOnSpeech(callStream) as any,
@@ -230,7 +232,6 @@ export class ActiveCall {
                     if (original_this.sampleCrossesThreshold(chunk, -1)) {
                         original_this.strikes++
                         if (original_this.strikes >= STOP_TALKING_THRESHOLD) {
-                            original_this.conversation.user_replied = true;
                             yield DONE_BUFFER;
                         }
                     } else {
@@ -331,22 +332,6 @@ export class ActiveCall {
         //this.playAmbiant().then();
         this.doStopTyping = true;
         this.playingTyping = -1;
-    }
-
-    requestNameOrSMSConsent() {
-        if (!this.conversation.user_replied) {
-            return;
-        }
-
-        if (!this.conversation.conversationInfo.requested_name) {
-            this.conversation.conversationInfo.requested_name = true;
-            this.promptAI("Ask the caller for their name.");
-        } else {
-            if (!this.conversation.conversationInfo.requested_sms_consent) {
-                this.conversation.conversationInfo.requested_sms_consent = true;
-                this.promptAI("Ask the caller if they consent to receiving SMS messages.");
-            }
-        }
     }
 
     updateCallHistory(message: ChatHistoryLog) {
