@@ -48,6 +48,8 @@ export class ActiveCall {
 
     pool: any[] = [];
 
+    exchanges = 0;
+
     strikes = 0;
     state: ActiveCallStreamState = ActiveCallStreamState.POOL;
 
@@ -120,7 +122,7 @@ export class ActiveCall {
                                 voiceService.log("info", `Finished forwarding call ${original_this.id}`);
                             } catch (e) {
                                 voiceService.log("error", `Error forwarding call ${original_this.id}`, {e});
-                                await openAiService.speakPrompt(callStream, original_this, "[The call could not be forwarded. Apologize to the user and ask if they need anything else.]")
+                                await openAiService.speakPrompt(callStream, original_this, "[The call could not be forwarded. Apologize to the user and ask if they need anything else.]");
                             }
                             return;
                         }
@@ -164,10 +166,18 @@ export class ActiveCall {
 
         this.stopListening();
         setTimeout(() => {
-            if (this.getSMSConsent()) {
+            const smsConsent = this.getSMSConsent();
+            const gaveName = this.userGaveName();
+            if (smsConsent && gaveName) {
                 this.promptAI("Introduce yourself, mention the name of the property.");
             } else {
-                this.promptAI("Introduce yourself, mention the name of the property, and ask the caller if they consent to receiving SMS messages.");
+                if (gaveName) {
+                    this.promptAI("Introduce yourself, mention the name of the property, and ask the caller if they consent to receiving SMS messages.");
+                } else if (smsConsent) {
+                    this.promptAI("Introduce yourself, mention the name of the property, and ask the caller's name.");
+                } else {
+                    this.promptAI("Introduce yourself, mention the name of the property, and ask the caller if they consent to receiving SMS messages. After they reply, make sure to answer any question the caller asked and then ask their name.");
+                }
             }
 
             pipeline([
@@ -232,6 +242,7 @@ export class ActiveCall {
                     if (original_this.sampleCrossesThreshold(chunk, -1)) {
                         original_this.strikes++
                         if (original_this.strikes >= STOP_TALKING_THRESHOLD) {
+                            original_this.exchanges++;
                             yield DONE_BUFFER;
                         }
                     } else {
@@ -448,6 +459,10 @@ export class ActiveCall {
 
     getSMSConsent() {
         return this.conversation.conversationInfo.sms_consent;
+    }
+
+    userGaveName() {
+        return !!this.conversation.conversationInfo.first_name || !!this.conversation.conversationInfo.last_name;
     }
 
     getTourDate() {
