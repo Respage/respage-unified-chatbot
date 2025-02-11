@@ -200,6 +200,7 @@ export class VoiceService {
                         locale: 'en-US',
                         attribution_type: 'voice',
                         attribution_value: 'voice',
+                        await_external_integration_ids: true
                     }
                 );
 
