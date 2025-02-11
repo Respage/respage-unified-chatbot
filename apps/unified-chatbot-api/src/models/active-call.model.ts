@@ -167,9 +167,9 @@ export class ActiveCall {
         this.stopListening();
         setTimeout(() => {
             if (!this.getSMSConsent()) {
-                this.promptAI("Introduce yourself, mention the name of the property, and ask the caller if they consent to receiving SMS messages.");
+                this.promptAI("Introduce yourself. Mention the name of the property and ask the caller if it is ok to send them more information after the call.");
             } else {
-                this.promptAI("Introduce yourself, mention the name of the property.");
+                this.promptAI("Introduce yourself. Mention the name of the property.");
             }
 
             pipeline([
