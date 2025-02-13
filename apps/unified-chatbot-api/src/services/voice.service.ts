@@ -142,7 +142,7 @@ export class VoiceService {
                             tour_date_time,
                             tour_scheduled: !!tour_date_time,
                             tour_date_time_confirmed: !!tour_date_time,
-                            sms_consent: communicationConsent
+                            sms_consent: communicationConsent,
                         }
                     );
 
@@ -191,19 +191,23 @@ export class VoiceService {
                     value: i
                 }));
 
-                const prospect = await this.resmateService.upsertProspect(
-                    call.conversation.campaign_id,
-                    {
-                        ...call.conversation.conversationInfo.prospect,
-                        ...user_info,
-                        interests,
-                        locale: 'en-US',
-                        attribution_type: 'voice',
-                        attribution_value: 'voice',
-                        await_external_integration_ids: true
-                    }
-                );
+                const upsert = {
+                    ...call.conversation.conversationInfo.prospect,
+                    ...user_info,
+                    interests,
+                    locale: 'en-US',
+                    attribution_type: 'voice',
+                    attribution_value: 'voice',
+                    await_external_integration_ids: true
+                };
 
+                if (user_info.sms_consent && !call.getSMSConsent()) {
+                    upsert.sms_opt_in = true;
+                    upsert.sms_opt_in_source = 'voice';
+                    upsert.phone = call.conversation.conversationInfo.phone;
+                }
+
+                const prospect = await this.resmateService.upsertProspect(call.conversation.campaign_id, upsert);
                 const conversation = await this.resmateService.addConversation(prospect._id, call);
 
                 await this.resmateService.upsertProspect(
@@ -220,13 +224,6 @@ export class VoiceService {
                         const collectedDate = DateTime.fromISO(user_info.tour_date_time).toUTC().setZone(call.getTimezone(), {keepLocalTime: true});
                         this.logger.info("call onClose detected tour date / time", {call, user_info, collectedDate: collectedDate.toISO()});
                         if (!call.getTourScheduled()) {
-                            if (user_info.sms_consent && !call.getSMSConsent()) {
-                                await this.resmateService.upsertProspect(
-                                    call.conversation.campaign_id,
-                                    {sms_opt_in: true, sms_opt_in_source: 'voice', phone: call.conversation.conversationInfo.phone}
-                                );
-                            }
-
                             try {
                                 const {availableTimes} = await this.resmateService.getTourTimes(
                                     call.conversation.campaign_id,
