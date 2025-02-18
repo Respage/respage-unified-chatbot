@@ -110,8 +110,7 @@ export class ResmateService {
         };
     }
 
-    constructor(@Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
-                @Inject(forwardRef(() => OpenAiService)) private openAIService: OpenAiService,) {
+    constructor(@Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger) {
         this.headers = {
             Authorization: `Basic ${Buffer.from(process.env.RESMATE_AUTH_USERNAME + ':' + process.env.RESMATE_AUTH_KEY).toString('base64')}`
         };
@@ -231,21 +230,6 @@ export class ResmateService {
         const { schedule_tour_options } = call.conversation.propertyInfo;
 
         const tourDateTimeUTC = tour_date_time.toUTC();
-
-        if (!prospect?._id) {
-            const upsert = {
-                ...call.conversation.conversationInfo.prospect,
-                interests,
-                locale: 'en-US',
-                attribution_type: 'voice',
-                attribution_value: 'voice',
-                await_external_integration_ids: true
-            };
-
-            const newProspect = await this.upsertProspect(call.conversation.campaign_id, upsert);
-            call.updateSystemPrompt(null, await this.mapExistingProspectInfo(newProspect));
-            prospect = call.conversation.conversationInfo.prospect;
-        }
 
         const basicReservation = {
             start_time: tourDateTimeUTC.toISO(),
