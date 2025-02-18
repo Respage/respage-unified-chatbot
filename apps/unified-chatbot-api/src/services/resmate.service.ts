@@ -233,22 +233,14 @@ export class ResmateService {
         const tourDateTimeUTC = tour_date_time.toUTC();
 
         if (!prospect?._id) {
-            const user_info: any = await this.openAIService.collectConversationInfo(call);
             const upsert = {
                 ...call.conversation.conversationInfo.prospect,
-                ...user_info,
                 interests,
                 locale: 'en-US',
                 attribution_type: 'voice',
                 attribution_value: 'voice',
                 await_external_integration_ids: true
             };
-
-            if (user_info.sms_consent && !call.getSMSConsent()) {
-                upsert.sms_opt_in = true;
-                upsert.sms_opt_in_source = 'voice';
-                upsert.phone = call.conversation.conversationInfo.phone;
-            }
 
             const newProspect = await this.upsertProspect(call.conversation.campaign_id, upsert);
             call.updateSystemPrompt(null, await this.mapExistingProspectInfo(newProspect));
