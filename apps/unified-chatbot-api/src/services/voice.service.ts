@@ -94,56 +94,9 @@ export class VoiceService {
         this.resmateService.getProspect(campaign_id, from_number)
             .then(async prospect => {
                 if (prospect) {
-                    let tour_date_time;
-                    if (prospect.tour_reservation) {
-                        try {
-                            const reservation = await this.resmateService.getTourReservation(prospect.tour_reservation);
-                            if (reservation) {
-                                const start_time = DateTime.fromISO(reservation.start_time, {zone: info.tour_availability.timezone});
-                                if (+start_time > +DateTime.now()) {
-                                    tour_date_time = start_time.toISO();
-                                }
-                            }
-                        } catch (e) {
-                            this.logger.error("VoiceService startCall getProspect getTourReservation", {e});
-                        }
-                    }
-
-                    let communicationConsent;
-                    try {
-                        communicationConsent = await this.resmateService.getCommunicationConsent(from_number, campaign_id, 'sms');
-                    } catch (e) {
-                        this.logger.error("VoiceService startCall getProspect getCommunicationConsent", {e});
-                    }
-
-                    const {
-                        _id,
-                        first_name,
-                        last_name,
-                        email_address,
-                        phone,
-                        interests
-                    } = prospect;
-
                     call.updateSystemPrompt(
                         null,
-                        {
-                            prospect: {
-                                _id,
-                                first_name,
-                                last_name,
-                                email_address,
-                                phone,
-                                interests,
-                                campaign_id
-                            },
-                            first_name: prospect.first_name,
-                            last_name: prospect.last_name,
-                            tour_date_time,
-                            tour_scheduled: !!tour_date_time,
-                            tour_date_time_confirmed: !!tour_date_time,
-                            sms_consent: communicationConsent,
-                        }
+                        await this.resmateService.mapExistingProspectInfo(prospect)
                     );
 
                     this.logger.info("VoiceService startCall getTourTimes getProspect existing prospect", {call});
@@ -234,7 +187,7 @@ export class VoiceService {
                                 if (availableTimes?.length) {
                                     if (availableTimes.find(t => +DateTime.fromISO(t, {zone: call.getTimezone()}) === +collectedDate)) {
                                         call.updateSystemPrompt(null, {tour_date_time: collectedDate});
-                                        await this.resmateService.scheduleTour(call.conversation);
+                                        await this.resmateService.scheduleTour(call);
                                     }
                                 } else {
                                     await this.resmateService.escalateToHumanContact(call, "The user was given an unavailable tour date and time.");

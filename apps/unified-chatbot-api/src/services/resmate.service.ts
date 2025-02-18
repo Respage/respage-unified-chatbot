@@ -1,10 +1,11 @@
 import winston, {Logger} from "winston";
 import axios from "axios";
-import {Inject, Injectable} from "@nestjs/common";
+import {forwardRef, Inject, Injectable} from "@nestjs/common";
 import {DateTime} from "luxon";
 import {ChatHistoryLog, Conversation, ConversationInfo, PropertyInfo} from "../models/conversation.model";
 import {ActiveCall} from "../models/active-call.model";
 import {WINSTON_MODULE_PROVIDER} from "nest-winston";
+import {OpenAiService} from "./open-ai.service";
 
 export interface UpsertProspectParams {
     _id: string,
@@ -58,7 +59,59 @@ export class ResmateService {
         ]
     }
 
-    constructor(@Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger) {
+    async mapExistingProspectInfo(prospect: any) {
+        let tour_date_time;
+        if (prospect.tour_reservation) {
+            try {
+                const reservation = await this.getTourReservation(prospect.tour_reservation);
+                if (reservation) {
+                    const start_time = DateTime.fromISO(reservation.start_time, {zone: prospect.timezone});
+                    if (+start_time > +DateTime.now()) {
+                        tour_date_time = start_time.toISO();
+                    }
+                }
+            } catch (e) {
+                this.logger.error("VoiceService startCall getProspect getTourReservation", {e});
+            }
+        }
+
+        let communicationConsent;
+        try {
+            communicationConsent = await this.getCommunicationConsent(prospect.phone, prospect.campaign_id, 'sms');
+        } catch (e) {
+            this.logger.error("VoiceService startCall getProspect getCommunicationConsent", {e});
+        }
+
+        const {
+            _id,
+            first_name,
+            last_name,
+            email_address,
+            phone,
+            interests
+        } = prospect;
+
+        return {
+            prospect: {
+                _id,
+                first_name,
+                last_name,
+                email_address,
+                phone,
+                interests,
+                campaign_id: prospect.campaign_id
+            },
+            first_name: prospect.first_name,
+            last_name: prospect.last_name,
+            tour_date_time,
+            tour_scheduled: !!tour_date_time,
+            tour_date_time_confirmed: !!tour_date_time,
+            sms_consent: communicationConsent,
+        };
+    }
+
+    constructor(@Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
+                @Inject(forwardRef(() => OpenAiService)) private openAIService: OpenAiService,) {
         this.headers = {
             Authorization: `Basic ${Buffer.from(process.env.RESMATE_AUTH_USERNAME + ':' + process.env.RESMATE_AUTH_KEY).toString('base64')}`
         };
@@ -163,7 +216,7 @@ export class ResmateService {
         return response.data.data;
     }
 
-    async scheduleTour(conversation: Conversation) {
+    async scheduleTour(call: ActiveCall) {
         const {
             move_in_date,
             unit_type,
@@ -172,17 +225,39 @@ export class ResmateService {
             tour_date_time,
             interests,
             prospect
-        } = conversation.conversationInfo;
+        } = call.conversation.conversationInfo;
 
-        const { tour_length, timezone } = conversation.propertyInfo.tour_availability;
-        const { schedule_tour_options } = conversation.propertyInfo;
+        const { tour_length, timezone } = call.conversation.propertyInfo.tour_availability;
+        const { schedule_tour_options } = call.conversation.propertyInfo;
 
         const tourDateTimeUTC = tour_date_time.toUTC();
+
+        if (!prospect?._id) {
+            const user_info: any = await this.openAIService.collectConversationInfo(call);
+            const upsert = {
+                ...call.conversation.conversationInfo.prospect,
+                ...user_info,
+                interests,
+                locale: 'en-US',
+                attribution_type: 'voice',
+                attribution_value: 'voice',
+                await_external_integration_ids: true
+            };
+
+            if (user_info.sms_consent && !call.getSMSConsent()) {
+                upsert.sms_opt_in = true;
+                upsert.sms_opt_in_source = 'voice';
+                upsert.phone = call.conversation.conversationInfo.phone;
+            }
+
+            const prospect = await this.upsertProspect(call.conversation.campaign_id, upsert);
+            call.updateSystemPrompt(null, await this.mapExistingProspectInfo(prospect));
+        }
 
         const basicReservation = {
             start_time: tourDateTimeUTC.toISO(),
             end_time: tourDateTimeUTC.plus({minutes: tour_length}).toISO(),
-            campaign_id: conversation.campaign_id,
+            campaign_id: call.conversation.campaign_id,
             prospect_id: prospect._id,
             name: `${first_name ? first_name + " " : ''}${last_name || ''}`,
         }
