@@ -104,6 +104,20 @@ export class OpenAiService {
                             if (!call.getTourDateTime()) {
                                 call.updateSystemPrompt(null, { tour_date_time: tourDateTime });
                             }
+
+                            if (!call.conversation.conversationInfo.prospect._id) {
+                                const upsert = {
+                                    ...call.conversation.conversationInfo.prospect,
+                                    locale: 'en-US',
+                                    attribution_type: 'voice',
+                                    attribution_value: 'voice',
+                                    await_external_integration_ids: true
+                                };
+
+                                const newProspect = await this.resmateService.upsertProspect(call.conversation.campaign_id, upsert);
+                                call.updateSystemPrompt(null, await this.resmateService.mapExistingProspectInfo(newProspect));
+                            }
+
                             await this.resmateService.scheduleTour(call);
 
                             call.updateSystemPrompt(null, {tour_scheduled: true});
@@ -288,6 +302,19 @@ export class OpenAiService {
                                 });
 
                             if (call.checkTourTimeAvailable(tourDateTime)) {
+                                if (!call.conversation.conversationInfo.prospect._id) {
+                                    const upsert = {
+                                        ...call.conversation.conversationInfo.prospect,
+                                        locale: 'en-US',
+                                        attribution_type: 'voice',
+                                        attribution_value: 'voice',
+                                        await_external_integration_ids: true
+                                    };
+
+                                    const newProspect = await this.resmateService.upsertProspect(call.conversation.campaign_id, upsert);
+                                    call.updateSystemPrompt(null, await this.resmateService.mapExistingProspectInfo(newProspect));
+                                }
+
                                 await this.resmateService.scheduleTour(call);
 
                                 call.updateSystemPrompt(null, {tour_scheduled: true});
