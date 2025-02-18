@@ -217,7 +217,7 @@ export class ResmateService {
     }
 
     async scheduleTour(call: ActiveCall) {
-        const {
+        let {
             move_in_date,
             unit_type,
             first_name,
@@ -250,8 +250,9 @@ export class ResmateService {
                 upsert.phone = call.conversation.conversationInfo.phone;
             }
 
-            const prospect = await this.upsertProspect(call.conversation.campaign_id, upsert);
-            call.updateSystemPrompt(null, await this.mapExistingProspectInfo(prospect));
+            const newProspect = await this.upsertProspect(call.conversation.campaign_id, upsert);
+            call.updateSystemPrompt(null, await this.mapExistingProspectInfo(newProspect));
+            prospect = call.conversation.conversationInfo.prospect;
         }
 
         const basicReservation = {
