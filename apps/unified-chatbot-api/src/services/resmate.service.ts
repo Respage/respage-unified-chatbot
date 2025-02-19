@@ -144,7 +144,7 @@ export class ResmateService {
             return response.data.data || {availableTimes: [], blockedTimes: []};
         } catch (e) {
             console.error('getTourDateData error'/*, {e}*/);
-            return Promise.resolve(null);
+            return {availableTimes: [], blockedTimes: []};
         }
     }
 
