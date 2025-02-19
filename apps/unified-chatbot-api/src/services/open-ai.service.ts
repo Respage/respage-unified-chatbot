@@ -111,7 +111,7 @@ export class OpenAiService {
 
                             call.updateSystemPrompt(null, {tour_scheduled: true});
 
-                            await this.speakPrompt(stream, call, '[Tell the user their tour has been scheduled and ask if you can help with anything else.]');
+                            await this.speakPrompt(stream, call, '[Tell the user you have scheduled their tour and ask if you can help with anything else.]');
                             return;
                         }
 
