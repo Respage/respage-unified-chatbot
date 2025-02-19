@@ -105,18 +105,7 @@ export class OpenAiService {
                                 call.updateSystemPrompt(null, { tour_date_time: tourDateTime });
                             }
 
-                            if (!call.conversation.conversationInfo.prospect._id) {
-                                const upsert = {
-                                    ...call.conversation.conversationInfo.prospect,
-                                    locale: 'en-US',
-                                    attribution_type: 'voice',
-                                    attribution_value: 'voice',
-                                    await_external_integration_ids: true
-                                };
-
-                                const newProspect = await this.resmateService.upsertProspect(call.conversation.campaign_id, upsert);
-                                call.updateSystemPrompt(null, await this.resmateService.mapExistingProspectInfo(newProspect));
-                            }
+                            await this.resmateService.ensureProspect(call);
 
                             await this.resmateService.scheduleTour(call);
 
@@ -284,23 +273,14 @@ export class OpenAiService {
                 if (tourDateTime) {
                     if ((smsConsent === true || smsConsent === false) && tourConfirmed) {
                         try {
-                            if (!call.conversation.conversationInfo.prospect._id) {
-                                const upsert = {
-                                    ...call.conversation.conversationInfo.prospect,
-                                    locale: 'en-US',
-                                    attribution_type: 'voice',
-                                    attribution_value: 'voice',
-                                    await_external_integration_ids: true
-                                };
-
-                                const newProspect = await this.resmateService.upsertProspect(call.conversation.campaign_id, upsert);
-                                call.updateSystemPrompt(null, await this.resmateService.mapExistingProspectInfo(newProspect));
-                            }
-
                             if (smsConsent) {
-                                await this.resmateService.upsertProspect(
-                                    call.conversation.campaign_id,
-                                    {sms_opt_in: true, sms_opt_in_source: 'voice', phone: call.conversation.conversationInfo.phone}
+                                await this.resmateService.ensureProspect(
+                                    call,
+                                    {
+                                        sms_opt_in: true,
+                                        sms_opt_in_source: 'voice',
+                                        phone: call.conversation.conversationInfo.phone
+                                    }
                                 );
                             }
 

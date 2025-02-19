@@ -1,11 +1,10 @@
-import winston, {Logger} from "winston";
+import {Logger} from "winston";
 import axios from "axios";
-import {forwardRef, Inject, Injectable} from "@nestjs/common";
+import {Inject, Injectable} from "@nestjs/common";
 import {DateTime} from "luxon";
-import {ChatHistoryLog, Conversation, ConversationInfo, PropertyInfo} from "../models/conversation.model";
+import {ChatHistoryLog} from "../models/conversation.model";
 import {ActiveCall} from "../models/active-call.model";
 import {WINSTON_MODULE_PROVIDER} from "nest-winston";
-import {OpenAiService} from "./open-ai.service";
 
 export interface UpsertProspectParams {
     _id: string,
@@ -172,6 +171,29 @@ export class ResmateService {
         });
 
         return !!(response.data?.data?.active && response.data?.data?.status === 'opted_in');
+    }
+
+    async ensureProspect(call: ActiveCall, additionalUpsert = {}) {
+        if (!call.conversation.conversationInfo.prospect._id) {
+            const upsert = {
+                ...call.conversation.conversationInfo.prospect,
+                locale: 'en-US',
+                attribution_type: 'voice',
+                attribution_value: 'voice',
+                ...additionalUpsert
+            };
+
+            const newProspect = await this.upsertProspect(call.conversation.campaign_id, upsert);
+            call.updateSystemPrompt(null, await this.mapExistingProspectInfo(newProspect));
+        } else if (Object.keys(additionalUpsert).length) {
+            await this.upsertProspect(
+                call.conversation.campaign_id,
+                {
+                    _id: call.conversation.conversationInfo.prospect._id,
+                    ...additionalUpsert
+                }
+            );
+        }
     }
 
     async upsertProspect(campaign_id: number, data: Partial<UpsertProspectParams>) {
