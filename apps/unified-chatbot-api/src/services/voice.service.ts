@@ -79,7 +79,7 @@ export class VoiceService {
 
                 if (update.some_available_tour_times || update.blocked_tour_times) {
                     call.updateSystemPrompt(update);
-                    this.logger.info("VoiceService startCall getTourTimes available times added", {call});
+                    this.logger.info("VoiceService startCall getTourTimes available times added", {info: call.conversation.conversationInfo});
                 }
             })
             .catch(e => this.logger.error({e}));
@@ -87,7 +87,7 @@ export class VoiceService {
         this.resmateService.isDuringOfficeHours(campaign_id, info.tour_availability.timezone )
             .then((is_during_office_hours) => {
                 call.updateSystemPrompt(null, {is_during_office_hours});
-                this.logger.info("VoiceService startCall getTourTimes isDuringOfficeHours", {call});
+                this.logger.info("VoiceService startCall getTourTimes isDuringOfficeHours", {info: call.conversation.conversationInfo});
             })
             .catch(e => this.logger.error({e}));
 
@@ -99,15 +99,15 @@ export class VoiceService {
                         await this.resmateService.mapExistingProspectInfo(prospect)
                     );
 
-                    this.logger.info("VoiceService startCall getTourTimes getProspect existing prospect", {call});
+                    this.logger.info("VoiceService startCall getTourTimes getProspect existing prospect", {info: call.conversation.conversationInfo});
                     return;
                 }
 
                 call.updateSystemPrompt(null, {prospect: {phone: from_number, campaign_id, timezone: info.tour_availability.timezone}});
 
-                this.logger.info("VoiceService startCall getTourTimes getProspect new prospect", {call});
+                this.logger.info("VoiceService startCall getTourTimes getProspect new prospect", {info: call.conversation.conversationInfo});
             })
-            .catch(e => this.logger.error("VoiceService startCall", {call, e}));
+            .catch(e => this.logger.error("VoiceService startCall", {info: call.conversation.conversationInfo, e}));
 
         call.init(
             callSocket,
@@ -126,7 +126,7 @@ export class VoiceService {
         call.onClose(async () => {
             try {
                 const user_info: any = await this.openAIService.collectConversationInfo(call);
-                this.logger.info("call onClose", {call, user_info});
+                this.logger.info("call onClose", {info: call.conversation.conversationInfo, user_info});
                 if (user_info.move_in_month) {
                     user_info.move_in_date = ActiveCall.compileTourDateTime(call.conversation.timezone, user_info.move_in_day, user_info.move_in_month, user_info.move_in_year);
                 }
@@ -175,7 +175,7 @@ export class VoiceService {
                 try {
                     if (user_info.tour_date_time && user_info.tour_confirmed && user_info.tour_scheduled) {
                         const collectedDate = DateTime.fromISO(user_info.tour_date_time).toUTC().setZone(call.getTimezone(), {keepLocalTime: true});
-                        this.logger.info("call onClose detected tour date / time", {call, user_info, collectedDate: collectedDate.toISO()});
+                        this.logger.info("call onClose detected tour date / time", {info: call.conversation.conversationInfo, user_info, collectedDate: collectedDate.toISO()});
                         if (!call.getTourScheduled()) {
                             try {
                                 const {availableTimes} = await this.resmateService.getTourTimes(
@@ -215,7 +215,7 @@ export class VoiceService {
             }
         });
         delete this.activeCalls[call.conversation_id];
-        this.logger.info("VoiceService startCall call started", {call});
+        this.logger.info("VoiceService startCall call started", {info: call.conversation.conversationInfo});
     }
 
     async forwardCall(call: ActiveCall) {

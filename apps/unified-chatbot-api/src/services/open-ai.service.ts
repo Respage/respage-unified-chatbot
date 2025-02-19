@@ -111,7 +111,7 @@ export class OpenAiService {
 
                             call.updateSystemPrompt(null, {tour_scheduled: true});
 
-                            await this.speakPrompt(stream, call, '[Tell the user their tour has been scheduled and ask if you can help with anything else.]');
+                            await this.speakPrompt(stream, call, '[Tell the user you have scheduled their tour and ask if you can help with anything else.]');
                             return;
                         }
 
@@ -149,7 +149,7 @@ export class OpenAiService {
                     return;
                 }
             } catch (e) {
-                this.logger.error("OpenAiService completionStream LLM function schedule_tour", {e, call});
+                this.logger.error("OpenAiService completionStream LLM function schedule_tour", {e, info: call.conversation.conversationInfo});
                 call.updateSystemPrompt(null, {
                     tour_date: null,
                     tour_time: null,
@@ -233,7 +233,7 @@ export class OpenAiService {
         }) => {
             try {
                 if (call.getTourScheduled()) {
-                    await this.speakPrompt(stream, call, "[Tell the user they have already scheduled a tour and tell them the date and time.]");
+                    await this.speakPrompt(stream, call, "[If the user just scheduled a tour tell them their tour has been scheduled, otherwise tell the user they have already scheduled a tour. In either case tell them the date and time it has been scheduled for.]");
                     return;
                 }
 
@@ -307,7 +307,7 @@ export class OpenAiService {
                             await this.speakPrompt(stream, call,"[Apologize and tell the user that the requested date and time are unavailable.]");
                             return;
                         } catch (e) {
-                            this.logger.error("OpenAiService completionStream LLM function confirm_tour_date_time", {e, call});
+                            this.logger.error("OpenAiService completionStream LLM function confirm_tour_date_time", {e, info: call.conversation.conversationInfo});
                             call.updateSystemPrompt(null, {
                                 tour_date: null,
                                 tour_time: null,
@@ -392,7 +392,7 @@ export class OpenAiService {
         },
         talk_to_human: async (stream, call: ActiveCall, params: {reason: string}) => {
             try {
-                this.logger.info("OpenAiService completionStream LLM function talk_to_human", {call, params});
+                this.logger.info("OpenAiService completionStream LLM function talk_to_human", {info: call.conversation.conversationInfo, params});
                 let prompt;
                 if (call.canForwardCall()) {
                     prompt = "[Tell the user you will forward them to someone at the property now.]";

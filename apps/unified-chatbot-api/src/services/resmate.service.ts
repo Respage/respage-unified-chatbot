@@ -2,7 +2,7 @@ import {Logger} from "winston";
 import axios from "axios";
 import {forwardRef, Inject, Injectable} from "@nestjs/common";
 import {DateTime} from "luxon";
-import {ChatHistoryLog} from "../models/conversation.model";
+import {ChatHistoryLog, ConversationInfo} from "../models/conversation.model";
 import {ActiveCall} from "../models/active-call.model";
 import {WINSTON_MODULE_PROVIDER} from "nest-winston";
 import {OpenAiService} from "./open-ai.service";
@@ -67,7 +67,7 @@ export class ResmateService {
                 if (reservation) {
                     const start_time = DateTime.fromISO(reservation.start_time, {zone: prospect.timezone});
                     if (+start_time > +DateTime.now()) {
-                        tour_date_time = start_time.toISO();
+                        tour_date_time = start_time;
                     }
                 }
             } catch (e) {
@@ -91,7 +91,7 @@ export class ResmateService {
             interests
         } = prospect;
 
-        return {
+        const mapped: ConversationInfo = {
             prospect: {
                 _id,
                 first_name,
@@ -103,11 +103,16 @@ export class ResmateService {
             },
             first_name: prospect.first_name,
             last_name: prospect.last_name,
-            tour_date_time,
-            tour_scheduled: !!tour_date_time,
-            tour_date_time_confirmed: !!tour_date_time,
             sms_consent: communicationConsent,
         };
+
+        if (tour_date_time) {
+            mapped.tour_date_time = tour_date_time;
+            mapped.tour_scheduled = !!tour_date_time;
+            mapped.tour_date_time_confirmed = !!tour_date_time;
+        }
+
+        return mapped;
     }
 
     constructor(@Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger) {
@@ -192,6 +197,7 @@ export class ResmateService {
                 call.conversation.campaign_id,
                 {
                     _id: call.conversation.conversationInfo.prospect._id,
+                    phone: call.conversation.conversationInfo.prospect.phone || call.conversation.conversationInfo.phone,
                     ...additionalUpsert
                 }
             );
