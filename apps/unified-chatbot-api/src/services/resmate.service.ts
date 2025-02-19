@@ -192,6 +192,7 @@ export class ResmateService {
                 call.conversation.campaign_id,
                 {
                     _id: call.conversation.conversationInfo.prospect._id,
+                    phone: call.conversation.conversationInfo.prospect.phone || call.conversation.conversationInfo.phone,
                     ...additionalUpsert
                 }
             );
