@@ -233,7 +233,7 @@ export class OpenAiService {
         }) => {
             try {
                 if (call.getTourScheduled()) {
-                    await this.speakPrompt(stream, call, "[Tell the user they have already scheduled a tour and tell them the date and time.]");
+                    await this.speakPrompt(stream, call, "[Tell the user a tour has been scheduled and tell them the date and time.]");
                     return;
                 }
 
