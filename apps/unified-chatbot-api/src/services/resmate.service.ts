@@ -1,10 +1,11 @@
 import {Logger} from "winston";
 import axios from "axios";
-import {Inject, Injectable} from "@nestjs/common";
+import {forwardRef, Inject, Injectable} from "@nestjs/common";
 import {DateTime} from "luxon";
 import {ChatHistoryLog} from "../models/conversation.model";
 import {ActiveCall} from "../models/active-call.model";
 import {WINSTON_MODULE_PROVIDER} from "nest-winston";
+import {OpenAiService} from "./open-ai.service";
 
 export interface UpsertProspectParams {
     _id: string,
@@ -262,25 +263,31 @@ export class ResmateService {
             name: `${first_name ? first_name + " " : ''}${last_name || ''}`,
         }
 
-        const remoteReservationResponse = await axios({
-            url: `${process.env.RESMATE_API_URL}/tour-integration/reservations`,
-            method: 'POST',
-            data: {
+        let remoteReservationResponse;
+        try {
+            remoteReservationResponse = await axios({
+                url: `${process.env.RESMATE_API_URL}/tour-integration/reservations`,
+                method: 'POST',
                 data: {
-                    reservation: {
-                        ...basicReservation,
-                        _id: null,
-                        move_in_date: move_in_date ? move_in_date.toISO() : null,
-                        unit_type: unit_type,
-                        message: interests?.length ? `Prospect is interested in ${interests.join(', ')}` : null,
+                    data: {
+                        reservation: {
+                            ...basicReservation,
+                            _id: null,
+                            move_in_date: move_in_date ? move_in_date.toISO() : null,
+                            unit_type: unit_type,
+                            message: interests?.length ? `Prospect is interested in ${interests.join(', ')}` : null,
+                        },
+                        prospect,
+                        integration_options: schedule_tour_options,
+                        notification_type: 'voice'
                     },
-                    prospect,
-                    integration_options: schedule_tour_options,
-                    notification_type: 'voice'
-                },
-                timezone
-            }
-        });
+                    timezone
+                }
+            });
+        } catch (e) {
+            this.logger.error("Failed to schedule remote reservation", {prospect, e});
+            remoteReservationResponse = null;
+        }
 
         const reservationResponse = await axios({
             url: `${process.env.RESMATE_API_URL}/tour/reservations/upsert`,
@@ -294,7 +301,7 @@ export class ResmateService {
                         is_recurring: false,
                         status: 'approved',
                         timezone,
-                        external_integration_response: remoteReservationResponse.data.data,
+                        external_integration_response: remoteReservationResponse?.data?.data,
                     },
                     update_prospect_send_notification: 'voice'
                 }

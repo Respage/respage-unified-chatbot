@@ -273,6 +273,19 @@ export class OpenAiService {
                 if (tourDateTime) {
                     if ((smsConsent === true || smsConsent === false) && tourConfirmed) {
                         try {
+                            if (!call.conversation.conversationInfo.prospect._id) {
+                                const upsert = {
+                                    ...call.conversation.conversationInfo.prospect,
+                                    locale: 'en-US',
+                                    attribution_type: 'voice',
+                                    attribution_value: 'voice',
+                                    await_external_integration_ids: true
+                                };
+
+                                const newProspect = await this.resmateService.upsertProspect(call.conversation.campaign_id, upsert);
+                                call.updateSystemPrompt(null, await this.resmateService.mapExistingProspectInfo(newProspect));
+                            }
+
                             if (smsConsent) {
                                 await this.resmateService.ensureProspect(
                                     call,
