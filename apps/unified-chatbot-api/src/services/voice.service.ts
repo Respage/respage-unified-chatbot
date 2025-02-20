@@ -167,6 +167,7 @@ export class VoiceService {
                     call.conversation.campaign_id,
                     {
                         _id: prospect._id,
+                        phone: prospect.phone,
                         conversation_id: conversation._id,
                         conversation_type: 'voice',
                     }
