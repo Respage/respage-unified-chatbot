@@ -1,8 +1,8 @@
-import { readFileSync } from 'fs';
-import { DateTime } from 'luxon';
+import {readFileSync} from 'fs';
+import {DateTime} from 'luxon';
 import {forwardRef, Inject, Injectable} from '@nestjs/common';
 import {WebSocket} from "ws";
-import winston, {Logger} from "winston";
+import {Logger} from "winston";
 import {GoogleService} from "./google.service";
 import {ElevenLabsService} from "./eleven-labs.service";
 import {ActiveCall} from "../models/active-call.model";
@@ -11,7 +11,8 @@ import {RedisService} from "./redis.service";
 import {ResmateService} from "./resmate.service";
 import {VonageService} from "./vonage.service";
 import {WINSTON_MODULE_PROVIDER} from "nest-winston";
-import {COLLECT_USER_INFO_FUNCTION} from "../models/open-ai-functions.model";
+import {LaunchDarklyService} from "./launchdarkly.service";
+import {FeatureFlag} from "../models/feature_flag_enum";
 
 @Injectable()
 export class VoiceService {
@@ -33,6 +34,7 @@ export class VoiceService {
         @Inject(forwardRef(() => RedisService)) private redisService: RedisService,
         @Inject(forwardRef(() => ResmateService)) private resmateService: ResmateService,
         @Inject(forwardRef(() => VonageService)) private vonageService: VonageService,
+        @Inject(forwardRef(() => LaunchDarklyService)) private launchDarklyService: LaunchDarklyService,
         @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger
     ) {}
 
@@ -103,9 +105,26 @@ export class VoiceService {
                     return;
                 }
 
-                call.updateSystemPrompt(null, {prospect: {phone: from_number, campaign_id, timezone: info.tour_availability.timezone}});
+                const doDelay = await this.launchDarklyService.isFeatureFlagEnabled(FeatureFlag.DelayProspectGeneration, campaign_id);
 
-                this.logger.info("VoiceService startCall getTourTimes getProspect new prospect", {info: call.conversation.conversationInfo});
+                if (doDelay) {
+                    call.delayProspectSaving = true;
+                    call.updateSystemPrompt(null, {prospect: {phone: from_number, campaign_id, timezone: info.tour_availability.timezone}});
+                } else {
+                    prospect = await this.resmateService.upsertProspect(campaign_id, {
+                        campaign_id,
+                        locale: 'en-US',
+                        attribution_type: 'voice',
+                        attribution_value: 'voice',
+                        phone: from_number,
+                        timezone: info.tour_availability.timezone
+                    });
+
+                    const {_id, phone} = prospect;
+
+                    call.updateSystemPrompt(null, {prospect: {_id, phone, campaign_id}});
+                    this.logger.info("VoiceService startCall getTourTimes getProspect new prospect", {info: call.conversation.conversationInfo});
+                }
             })
             .catch(e => this.logger.error("VoiceService startCall", {info: call.conversation.conversationInfo, e}));
 

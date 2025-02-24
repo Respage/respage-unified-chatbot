@@ -6,15 +6,15 @@ import {VonageGatewayModule} from "./gateways/vonage-gateway.module";
 import {GoogleService} from "../services/google.service";
 import {OpenAiService} from "../services/open-ai.service";
 import {ElevenLabsService} from "../services/eleven-labs.service";
-// import {DeepgramService} from "../services/deepgram.service";
-// import {UnrealSpeechService} from "../services/unreal-speech.service";
 import {ResmateService} from "../services/resmate.service";
 import {RedisModule} from "../services/redis.module";
+import {LaunchDarklyModule} from "../services/launchdarkly.module";
 
 @Module({
     imports: [
         VonageGatewayModule,
-        RedisModule
+        RedisModule,
+        LaunchDarklyModule
     ],
     controllers: [
         VoiceController
@@ -25,8 +25,6 @@ import {RedisModule} from "../services/redis.module";
         GoogleService,
         OpenAiService,
         ElevenLabsService,
-        // DeepgramService,
-        // UnrealSpeechService,
         ResmateService,
     ]
 })
