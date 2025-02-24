@@ -41,6 +41,7 @@ export class ActiveCall {
     playingTyping: number = -1
     doNotInterrupt: boolean = false;
     doForwardCall: boolean = false;
+    delayProspectSaving: boolean = false;
 
     internalMessageIncoming: boolean = false;
 

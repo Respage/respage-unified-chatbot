@@ -29,6 +29,7 @@
     "@google-cloud/speech": "^6.5.0",
     "@google-cloud/text-to-speech": "^5.2.0",
     "@langchain/openai": "^0.0.28",
+    "@launchdarkly/node-server-sdk": "^9.7.4",
     "@nestjs/common": "^10.0.0",
     "@nestjs/core": "^10.0.0",
     "@nestjs/platform-express": "^10.0.0",
