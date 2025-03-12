@@ -21,4 +21,16 @@
     <grapheme>hale</grapheme>
     <phoneme>hɑ leɪ</grapheme>
   </lexeme>
+  <lexeme>
+    <grapheme>Hale</grapheme>
+    <phoneme>hɑ leɪ</grapheme>
+  </lexeme>
+  <lexeme>
+    <grapheme>kokua</grapheme>
+    <phoneme>kəʊ ku ɑ</grapheme>
+  </lexeme>
+  <lexeme>
+    <grapheme>Kokua</grapheme>
+    <phoneme>kəʊ ku ɑ</grapheme>
+  </lexeme>
 </lexicon>
