@@ -17,4 +17,8 @@
     <grapheme>blvd</grapheme>
     <alias>boulevard</alias>
   </lexeme>
+  <lexeme>
+    <grapheme>hale</grapheme>
+    <phoneme>hɑ leɪ</grapheme>
+  </lexeme>
 </lexicon>
