@@ -57,34 +57,38 @@ export class VoiceService {
         const campaign_id = voiceInbox.campaign_id;
         const info = await this.redisService.getSystemPromptData(campaign_id);
 
-        const call = new ActiveCall(call_id, conversation_id, campaign_id, info.tour_availability.timezone);
+        const offerTours = !!info.tour_availability.in_person_tours_enabled;
+
+        const call = new ActiveCall(call_id, conversation_id, campaign_id, info.tour_availability.timezone, offerTours);
         this.activeCalls[conversation_id] = call;
 
         info.call_forwarding_number = voiceInbox.call_forwarding_number;
 
-        const tourTimeBuffer = info?.tour_availability?.closest_possible_tour_available_in_hours || 24;
+        if (offerTours) {
+            const tourTimeBuffer = info?.tour_availability?.closest_possible_tour_available_in_hours || 24;
 
-        const nowDateTime = DateTime.local({zone: info.tour_availability.timezone});
+            const nowDateTime = DateTime.local({zone: info.tour_availability.timezone});
 
-        const earliestDateTime = nowDateTime.plus({hours: tourTimeBuffer});
-        this.resmateService.getTourTimes(campaign_id, earliestDateTime.toFormat('yyyy-LL-dd'), 6)
-            .then(({availableTimes, blockedTimes}) => {
-                const update: { some_available_tour_times?: string[], blocked_tour_times?: string[] } = {};
+            const earliestDateTime = nowDateTime.plus({hours: tourTimeBuffer});
+            this.resmateService.getTourTimes(campaign_id, earliestDateTime.toFormat('yyyy-LL-dd'), 6)
+                .then(({availableTimes, blockedTimes}) => {
+                    const update: { some_available_tour_times?: string[], blocked_tour_times?: string[] } = {};
 
-                if (availableTimes?.length) {
-                    update.some_available_tour_times = availableTimes.filter(x => DateTime.fromISO(x, {zone: info.tour_availability.timezone}) > earliestDateTime)
-                }
+                    if (availableTimes?.length) {
+                        update.some_available_tour_times = availableTimes.filter(x => DateTime.fromISO(x, {zone: info.tour_availability.timezone}) > earliestDateTime)
+                    }
 
-                if (blockedTimes?.length) {
-                    update.blocked_tour_times = blockedTimes;
-                }
+                    if (blockedTimes?.length) {
+                        update.blocked_tour_times = blockedTimes;
+                    }
 
-                if (update.some_available_tour_times || update.blocked_tour_times) {
-                    call.updateSystemPrompt(update);
-                    this.logger.info("VoiceService startCall getTourTimes available times added", {info: call.conversation.conversationInfo});
-                }
-            })
-            .catch(e => this.logger.error({e}));
+                    if (update.some_available_tour_times || update.blocked_tour_times) {
+                        call.updateSystemPrompt(update);
+                        this.logger.info("VoiceService startCall getTourTimes available times added", {info: call.conversation.conversationInfo});
+                    }
+                })
+                .catch(e => this.logger.error({e}));
+        }
 
         this.resmateService.isDuringOfficeHours(campaign_id, info.tour_availability.timezone )
             .then((is_during_office_hours) => {
