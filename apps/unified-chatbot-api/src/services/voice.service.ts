@@ -60,6 +60,7 @@ export class VoiceService {
         const offerTours = !!info.tour_availability.in_person_tours_enabled;
 
         const call = new ActiveCall(call_id, conversation_id, campaign_id, info.tour_availability.timezone, offerTours);
+        this.logger.info("SYSTEM PROMPT", {prompt: call.conversation.getSystemPrompt()});
         this.activeCalls[conversation_id] = call;
 
         info.call_forwarding_number = voiceInbox.call_forwarding_number;
