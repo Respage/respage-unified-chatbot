@@ -26,6 +26,7 @@ export interface PropertyInfo {
         // ...
     },
     schedule_tour_options?: any;
+    timezone?: string;
 }
 
 export interface ConversationInfo {

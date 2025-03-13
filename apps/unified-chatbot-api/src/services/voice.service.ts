@@ -64,11 +64,12 @@ export class VoiceService {
         this.activeCalls[conversation_id] = call;
 
         info.call_forwarding_number = voiceInbox.call_forwarding_number;
+        info.timezone = info.tour_availability.timezone;
 
         if (offerTours) {
             const tourTimeBuffer = info?.tour_availability?.closest_possible_tour_available_in_hours || 24;
 
-            const nowDateTime = DateTime.local({zone: info.tour_availability.timezone});
+            const nowDateTime = DateTime.local({zone: info.timezone});
 
             const earliestDateTime = nowDateTime.plus({hours: tourTimeBuffer});
             this.resmateService.getTourTimes(campaign_id, earliestDateTime.toFormat('yyyy-LL-dd'), 6)
@@ -76,7 +77,7 @@ export class VoiceService {
                     const update: { some_available_tour_times?: string[], blocked_tour_times?: string[] } = {};
 
                     if (availableTimes?.length) {
-                        update.some_available_tour_times = availableTimes.filter(x => DateTime.fromISO(x, {zone: info.tour_availability.timezone}) > earliestDateTime)
+                        update.some_available_tour_times = availableTimes.filter(x => DateTime.fromISO(x, {zone: info.timezone}) > earliestDateTime)
                     }
 
                     if (blockedTimes?.length) {
@@ -90,11 +91,10 @@ export class VoiceService {
                 })
                 .catch(e => this.logger.error({e}));
         } else {
-            info.timezone = info.tour_availability.timezone;
             info.tour_availability = null;
         }
 
-        this.resmateService.isDuringOfficeHours(campaign_id, info.tour_availability.timezone )
+        this.resmateService.isDuringOfficeHours(campaign_id, info.timezone )
             .then((is_during_office_hours) => {
                 call.updateSystemPrompt(null, {is_during_office_hours});
                 this.logger.info("VoiceService startCall getTourTimes isDuringOfficeHours", {info: call.conversation.conversationInfo});
@@ -117,7 +117,7 @@ export class VoiceService {
 
                 if (doDelay) {
                     call.delayProspectSaving = true;
-                    call.updateSystemPrompt(null, {prospect: {phone: from_number, campaign_id, timezone: info.tour_availability.timezone}});
+                    call.updateSystemPrompt(null, {prospect: {phone: from_number, campaign_id, timezone: info.timezone}});
                 } else {
                     prospect = await this.resmateService.upsertProspect(campaign_id, {
                         campaign_id,
@@ -125,7 +125,7 @@ export class VoiceService {
                         attribution_type: 'voice',
                         attribution_value: 'voice',
                         phone: from_number,
-                        timezone: info.tour_availability.timezone
+                        timezone: info.timezone
                     });
 
                     const {_id, phone} = prospect;
