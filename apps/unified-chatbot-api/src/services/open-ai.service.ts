@@ -32,6 +32,11 @@ export class OpenAiService {
             tour_confirmed: string,
             sms_consent: boolean
         }) => {
+            if (!call.conversation.propertyInfo.tour_availability) {
+                await this.speakPrompt(stream, call, '[Politely tell the user that you cannot schedule a tour and give them contact information for the office.]');
+                return;
+            }
+
             if (call.getTourScheduled()) {
                 await this.speakPrompt(
                     stream,
@@ -232,6 +237,11 @@ export class OpenAiService {
             tour_confirmed: boolean
         }) => {
             try {
+                if (!call.conversation.propertyInfo.tour_availability) {
+                    await this.speakPrompt(stream, call, '[Politely tell the user that you cannot schedule a tour and give them contact information for the office.]');
+                    return;
+                }
+
                 if (call.getTourScheduled()) {
                     await this.speakPrompt(stream, call, "[If the user just scheduled a tour tell them their tour has been scheduled, otherwise tell the user they have already scheduled a tour. In either case tell them the date and time it has been scheduled for.]");
                     return;
