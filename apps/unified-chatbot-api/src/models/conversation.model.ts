@@ -71,14 +71,14 @@ export class Conversation {
 
     functions: any[] = [];
 
-    constructor(campaign_id: number, conversationType: ConversationType, timezone: string, callMemorySize = 20) {
+    constructor(campaign_id: number, conversationType: ConversationType, timezone: string, callMemorySize = 20, offerTours: boolean = true) {
         this.type = conversationType;
         this.campaign_id = campaign_id;
         this.timezone = timezone;
 
         this.systemPrompt = {
             role: 'system',
-            content: `Today's date is ${DateTime.local({zone: timezone}).toISODate()}. ` + process.env.SYSTEM_PROMPT_VOICE
+            content: `Today's date is ${DateTime.local({zone: timezone}).toISODate()}. ` + (offerTours ? process.env.SYSTEM_PROMPT_VOICE : process.env.SYSTEM_PROMPT_VOICE_NO_TOURS)
         };
 
         this.conversationHistory = [];
