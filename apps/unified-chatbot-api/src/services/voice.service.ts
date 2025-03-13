@@ -91,7 +91,7 @@ export class VoiceService {
                 .catch(e => this.logger.error({e}));
         } else {
             info.timezone = info.tour_availability.timezone;
-            info.tour_availability = false;
+            info.tour_availability = null;
         }
 
         this.resmateService.isDuringOfficeHours(campaign_id, info.tour_availability.timezone )

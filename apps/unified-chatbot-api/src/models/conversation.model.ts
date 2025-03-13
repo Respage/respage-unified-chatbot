@@ -24,7 +24,7 @@ export interface PropertyInfo {
         closest_possible_tour_available_in_hours?: number;
         timezone?: string;
         // ...
-    } | boolean,
+    },
     schedule_tour_options?: any;
 }
 
