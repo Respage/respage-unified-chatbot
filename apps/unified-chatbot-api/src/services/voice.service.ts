@@ -56,7 +56,7 @@ export class VoiceService {
 
         const campaign_id = voiceInbox.campaign_id;
         const info = await this.redisService.getSystemPromptData(campaign_id);
-
+        this.logger.info("SYSTEM PROMPT INFO", {info});
         const offerTours = !!info.tour_availability.in_person_tours_enabled;
 
         const call = new ActiveCall(call_id, conversation_id, campaign_id, info.tour_availability.timezone, offerTours);
