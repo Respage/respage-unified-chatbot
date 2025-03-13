@@ -91,7 +91,10 @@ export class VoiceService {
                 })
                 .catch(e => this.logger.error({e}));
         } else {
-            info.tour_availability = null;
+            delete info.tour_availability;
+            delete info.schedule_tour_options;
+            delete info.some_available_tour_times;
+            delete info.blocked_tour_times;
         }
 
         this.logger.info("SYSTEM PROMPT INFO", {info});
