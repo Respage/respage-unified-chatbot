@@ -52,8 +52,13 @@ export type ChatHistoryLog = ChatCompletionMessageParam & { timestamp?: Date };
 export type ConversationType = 'voice' | 'chatbot';
 
 const SYSTEM_PROMPTS = {
-    'voice': process.env.SYSTEM_PROMPT_VOICE
+    'voice': process.env.SYSTEM_PROMPT_VOICE,
+    'voice_no_tours': process.env.SYSTEM_PROMPT_VOICE_NO_TOURS
 };
+
+function selectSystemPrompt(type: ConversationType, tours?: boolean): string {
+    return SYSTEM_PROMPTS[type + (tours ? "" : "_no_tours")];
+}
 
 export class Conversation {
     readonly campaign_id: number
@@ -100,7 +105,7 @@ export class Conversation {
             this.conversationInfo = {...this.conversationInfo, ...conversationInfoUpdate};
         }
 
-        let content = SYSTEM_PROMPTS[this.type]
+        let content = selectSystemPrompt(this.type, !!this.propertyInfo.tour_availability)
             .replace("{{DATE_TODAY}}", (new Date()).toString().split(/\d\d:\d\d:\d\d/)[0].trim())
             .replace("{{PROPERTY_INFO}}", JSON.stringify(this.propertyInfo || {}))
             .replace("{{CONVERSATION_INFO}}", JSON.stringify(this.conversationInfo || {}));
