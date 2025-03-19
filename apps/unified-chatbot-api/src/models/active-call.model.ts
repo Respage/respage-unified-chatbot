@@ -91,7 +91,7 @@ export class ActiveCall {
     init(websocket: WebSocket,
          speechToText: Duplex, AI: Duplex,
          textToSpeech: Duplex,
-         systemPrompData: { property: PropertyInfo, conversation: ConversationInfo },
+         systemPromptData: { property: PropertyInfo, conversation: ConversationInfo },
          openAiService: OpenAiService,
          voiceService: VoiceService,
          callStartDelay: number = 0
@@ -99,8 +99,12 @@ export class ActiveCall {
         console.log('ActiveCall init'/*, {call: this}*/);
         const original_this = this;
 
-        this.updateSystemPrompt(systemPrompData.property, systemPrompData.conversation);
-        this.conversation.functions = [SCHEDULE_TOUR_FUNCTION, LOOKUP_TOUR_TIMES_FUNCTION, TALK_TO_HUMAN_FUNCTION];
+        this.updateSystemPrompt(systemPromptData.property, systemPromptData.conversation);
+        if (systemPromptData.property.tour_availability) {
+            this.conversation.functions = [SCHEDULE_TOUR_FUNCTION, LOOKUP_TOUR_TIMES_FUNCTION, TALK_TO_HUMAN_FUNCTION];
+        } else {
+            this.conversation.functions = [TALK_TO_HUMAN_FUNCTION];
+        }
 
         let streamStart = 0;
         let audioLength = 0;
