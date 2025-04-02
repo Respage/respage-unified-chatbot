@@ -467,6 +467,10 @@ export class OpenAiService {
         return response.data[0].embedding;
     }
 
+    callFunction(name: string, call: ActiveCall, params: any) {
+        return this.functions[name]([], call, params);
+    }
+
     getTextToSpeechStream(): Duplex {
         const original_this = this;
         const writeStream = require('fs').createWriteStream('temp.raw', {encoding: "binary"});
