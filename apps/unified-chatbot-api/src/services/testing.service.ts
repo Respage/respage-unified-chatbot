@@ -20,7 +20,7 @@ export class TestingService {
 
     async generateConversation(campaignId: number, statements: string[], iterations: number = 1, phone: string = '5555555555') {
         const info = await this.redisService.getSystemPromptData(campaignId);
-        
+        info.timezone = info.tour_availability.timezone;        
         const offerTours = !!info.tour_availability.in_person_tours_enabled;
 
         const results = [];
