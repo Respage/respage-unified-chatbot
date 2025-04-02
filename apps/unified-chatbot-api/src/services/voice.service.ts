@@ -19,13 +19,13 @@ export class VoiceService {
     private activeCalls: {[id: string]: ActiveCall} = {};
 
     static readonly typingSounds: Buffer[] = [
-        Buffer.from(readFileSync('./assets/typing_1_quiet.raw', {encoding: 'binary'}), 'binary'),
-        Buffer.from(readFileSync('./assets/typing_2_quiet.raw', {encoding: 'binary'}), 'binary'),
-        Buffer.from(readFileSync('./assets/typing_3_quiet.raw', {encoding: 'binary'}), 'binary'),
-        Buffer.from(readFileSync('./assets/typing_4_quiet.raw', {encoding: 'binary'}), 'binary'),
+        // Buffer.from(readFileSync('./assets/typing_1_quiet.raw', {encoding: 'binary'}), 'binary'),
+        // Buffer.from(readFileSync('./assets/typing_2_quiet.raw', {encoding: 'binary'}), 'binary'),
+        // Buffer.from(readFileSync('./assets/typing_3_quiet.raw', {encoding: 'binary'}), 'binary'),
+        // Buffer.from(readFileSync('./assets/typing_4_quiet.raw', {encoding: 'binary'}), 'binary'),
     ];
 
-    static readonly ambiantSound: Buffer = Buffer.from(readFileSync('./assets/ambiant_noise.raw', {encoding: 'binary'}), 'binary')
+    static readonly ambiantSound: Buffer = Buffer.from("");//readFileSync('./assets/ambiant_noise.raw', {encoding: 'binary'}), 'binary')
 
     constructor(
         @Inject(forwardRef(() => GoogleService)) private googleService: GoogleService,

@@ -9,6 +9,7 @@ import {ElevenLabsService} from "../services/eleven-labs.service";
 import {ResmateService} from "../services/resmate.service";
 import {RedisModule} from "../services/redis.module";
 import {LaunchDarklyModule} from "../services/launchdarkly.module";
+import {TestingService} from '../services/testing.service';
 
 @Module({
     imports: [
@@ -26,6 +27,10 @@ import {LaunchDarklyModule} from "../services/launchdarkly.module";
         OpenAiService,
         ElevenLabsService,
         ResmateService,
+        TestingService
+    ],
+    exports: [
+        TestingService,
     ]
 })
 export class VoiceModule {}

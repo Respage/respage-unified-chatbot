@@ -18,6 +18,7 @@
       "compilerOptions": {
         "tsConfigPath": "apps/unified-chatbot-api/tsconfig.app.json",
         "assets": [
+          "client/**/*",
           "assets/**/*"
         ]
       }
