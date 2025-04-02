@@ -260,18 +260,24 @@
                         console.error('Username and password are required');
                         return;
                     }
-     
-                    Alpine.store('auth', btoa(this.username + ':' + this.password));
-                    const response = await request('/test/authenticate');
 
-                    if (response) {
-                        console.log('Authenticated successfully');
-                        localStorage.setItem('auth', Alpine.store('auth'));
-                    } else {
-                        console.error('Authentication failed');
+                    try {
+                            Alpine.store('auth', btoa(this.username + ':' + this.password));
+                            const response = await request('/test/authenticate');
+
+                        if (response) {
+                            console.log('Authenticated successfully');
+                            localStorage.setItem('auth', Alpine.store('auth'));
+                        } else {
+                            console.error('Authentication failed');
+                            Alpine.store('auth', '');
+                            this.username = '';
+                            this.password = '';
+                        } 
+                    } catch (error) {
+                        console.error('Authentication error:', error);
                         Alpine.store('auth', '');
-                        this.username = '';
-                        this.password = '';
+                        this.error = error.message || 'An unexpected error occurred. Please try again.';
                     }
                 }
             }));
