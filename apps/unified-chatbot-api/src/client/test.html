@@ -1,0 +1,420 @@
+<html>
+    <head>
+        <title>Test Page</title>
+        <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+        <style>
+            body {
+                background-color: #f8f9fa;
+                padding: 2rem;
+            }
+            .auth-container, .campaign-container {
+                max-width: 600px;
+                margin: 0 auto;
+                background: white;
+                padding: 2rem;
+                border-radius: 8px;
+                box-shadow: 0 0 10px rgba(0,0,0,0.1);
+            }
+            .nav-tabs {
+                margin-bottom: 1rem;
+            }
+            .tab-content {
+                padding-top: 1rem;
+            }
+            .chat-message {
+                margin-bottom: 1rem;
+                padding: 0.75rem;
+                border-radius: 8px;
+                max-width: 80%;
+                display: flex;
+                flex-direction: column;
+            }
+            .chat-message.user {
+                background-color: #007bff;
+                color: white;
+                margin-left: auto;
+                border-bottom-right-radius: 2px;
+            }
+            .chat-message.assistant {
+                background-color: #e9ecef;
+                margin-right: auto;
+                border-bottom-left-radius: 2px;
+            }
+            .chat-container {
+                display: flex;
+                flex-direction: column;
+                gap: 1rem;
+            }
+            .chat-speaker {
+                font-size: 0.85rem;
+                margin-bottom: 0.25rem;
+                opacity: 0.8;
+            }
+            .chat-content {
+                word-break: break-word;
+            }
+            .conversation-selector {
+                margin-bottom: 1rem;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                gap: 1rem;
+                width: 300px;
+                margin-left: auto;
+                margin-right: auto;
+            }
+            .nav-button {
+                background: none;
+                border: none;
+                padding: 0.5rem;
+                cursor: pointer;
+                color: #007bff;
+                flex-shrink: 0;
+            }
+            .nav-button:disabled {
+                color: #6c757d;
+                cursor: not-allowed;
+            }
+            .conversation-number {
+                font-weight: 500;
+            }
+            .conversation-numbers {
+                display: flex;
+                gap: 0.5rem;
+                align-items: center;
+                justify-content: center;
+                flex: 1;
+                min-width: 200px;
+            }
+            .conversation-number-btn {
+                background: none;
+                border: 1px solid #dee2e6;
+                padding: 0.25rem 0.5rem;
+                cursor: pointer;
+                color: #007bff;
+                border-radius: 4px;
+                min-width: 32px;
+                text-align: center;
+            }
+            .conversation-number-btn.active {
+                background-color: #007bff;
+                color: white;
+                border-color: #007bff;
+            }
+            .ellipsis {
+                color: #6c757d;
+                padding: 0.25rem 0.5rem;
+                min-width: 32px;
+                text-align: center;
+            }
+            .loading-container {
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                min-height: 200px;
+            }
+        </style>
+    </head>
+    <body>
+        <div class="container">
+            <div x-show="!$store.auth" x-data="authForm" class="auth-container">
+                <h2 class="mb-4 text-center">Authentication</h2>
+                <div class="mb-3">
+                    <input type="text" class="form-control" x-model="username" placeholder="Username" />
+                </div>
+                <div class="mb-3">
+                    <input type="password" class="form-control" x-model="password" placeholder="Password" />
+                </div>
+                <div class="d-grid">
+                    <button class="btn btn-primary" @click="authenticate()">Authenticate</button>
+                </div>
+            </div>
+
+            <div x-show="$store.auth" x-data="TestConfig" class="campaign-container">
+                <ul class="nav nav-tabs" role="tablist">
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link active" id="config-tab" data-bs-toggle="tab" data-bs-target="#config" type="button" role="tab">Test Configuration</button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link" id="results-tab" data-bs-toggle="tab" data-bs-target="#results" type="button" role="tab">Test Results</button>
+                    </li>
+                </ul>
+
+                <div class="tab-content">
+                    <div class="tab-pane fade show active" id="config" role="tabpanel">
+                        <div class="mb-4">
+                            <label class="form-label">Property ID</label>
+                            <input type="text" class="form-control" x-model="campaign_id" placeholder="Campaign ID" />
+                        </div>
+                        <div class="mb-4">
+                            <label class="form-label">Phone Number</label>
+                            <input type="text" class="form-control" x-model="phone" placeholder="Prospect Phone Number" />
+                        </div>
+                        <div class="mb-4">
+                            <label class="form-label">Iterations</label>
+                            <input type="number" class="form-control" x-model="iterations" placeholder="Iterations" />
+                        </div>
+                        
+                        <div class="statements-container mb-4">
+                            <template x-for="(statement, index) in statements" :key="index">
+                                <div class="input-group mb-3">
+                                    <input type="text" class="form-control" x-model="statement.text" placeholder="Statement" @keyup.enter="addStatement()" />
+                                    <button class="btn btn-outline-danger" @click="statements.splice(index, 1)">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-trash" viewBox="0 0 16 16">
+                                            <path d="M5.5 5.5A.5.5 0 0 1 6 6v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5m2.5 0a.5.5 0 0 1 .5.5v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5m3 .5a.5.5 0 0 0-1 0v6a.5.5 0 0 0 1 0z"/>
+                                            <path d="M14.5 3a1 1 0 0 1-1 1H13v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V4h-.5a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1H6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1h3.5a1 1 0 0 1 1 1zM4.118 4 4 4.059V13a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1V4.059L11.882 4zM2.5 3h11V2h-11z"/>
+                                        </svg>
+                                    </button>
+                                </div>
+                            </template>
+                        </div>
+
+                        <div class="d-grid gap-2">
+                            <button class="btn btn-success" @click="addStatement()">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-plus-circle me-2" viewBox="0 0 16 16">
+                                    <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14m0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16"/>
+                                    <path d="M8 4a.5.5 0 0 1 .5.5v3h3a.5.5 0 0 1 0 1h-3v3a.5.5 0 0 1-1 0v-3h-3a.5.5 0 0 1 0-1h3v-3A.5.5 0 0 1 8 4"/>
+                                </svg>
+                                Add Statement
+                            </button>
+                            <button class="btn btn-primary" @click="submit()" :disabled="!isFormValid">Submit</button>
+                        </div>
+                    </div>
+                    <div class="tab-pane fade" id="results" role="tabpanel">
+                        <div class="results-container">
+                            <h4 class="mb-4">Test Results</h4>
+                            
+                            <div x-show="error" class="alert alert-danger mb-4" role="alert">
+                                <strong>Error:</strong> <span x-text="error"></span>
+                            </div>
+
+                            <div x-show="!lastResponse.length && !isLoading && !error" class="text-center text-muted">
+                                <p>No test results available yet. Submit a test configuration to see results here.</p>
+                            </div>
+                            <div x-show="isLoading" class="loading-container">
+                                <div class="spinner-border text-primary" role="status">
+                                    <span class="visually-hidden">Loading...</span>
+                                </div>
+                            </div>
+                            <div x-show="lastResponse.length && !isLoading">
+                                <div class="conversation-selector mb-4">
+                                    <button 
+                                        class="nav-button" 
+                                        @click="selectedConversation = Math.max(0, selectedConversation - 1)"
+                                        :disabled="selectedConversation === 0"
+                                    >
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-chevron-left" viewBox="0 0 16 16">
+                                            <path fill-rule="evenodd" d="M11.354 1.646a.5.5 0 0 1 0 .708L5.707 8l5.647 5.646a.5.5 0 0 1-.708.708l-6-6a.5.5 0 0 1 0-.708l6-6a.5.5 0 0 1 .708 0z"/>
+                                        </svg>
+                                    </button>
+                                    <div class="conversation-numbers">
+                                        <template x-for="(item, idx) in getVisiblePages()" :key="idx">
+                                            <div>
+                                                <div x-show="item > -1">
+                                                    <button 
+                                                        class="conversation-number-btn"
+                                                        :class="{ 'active': selectedConversation === item - 1 }"
+                                                        @click="selectedConversation = item - 1"
+                                                        x-text="item"
+                                                    ></button>
+                                                </div>
+                                                <div x-show="item == -1" class="ellipsis">⋯</div>
+                                            </div>
+                                        </template>
+                                    </div>
+                                    <button 
+                                        class="nav-button"
+                                        @click="selectedConversation = Math.min(lastResponse.length - 1, selectedConversation + 1)"
+                                        :disabled="selectedConversation === lastResponse.length - 1"
+                                    >
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-chevron-right" viewBox="0 0 16 16">
+                                            <path fill-rule="evenodd" d="M4.646 1.646a.5.5 0 0 1 .708 0l6 6a.5.5 0 0 1 0 .708l-6 6a.5.5 0 0 1-.708-.708L10.293 8 4.646 2.354a.5.5 0 0 1 0-.708z"/>
+                                        </svg>
+                                    </button>
+                                </div>
+                                <div class="chat-container">
+                                    <template x-for="(message, index) in lastResponse[selectedConversation] || []" :key="index">
+                                        <div :class="['chat-message', message.speaker.toLowerCase() === 'user' ? 'user' : 'assistant']">
+                                            <div class="chat-speaker" x-text="message.speaker"></div>
+                                            <div class="chat-content" x-text="message.content"></div>
+                                        </div>
+                                    </template>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </body>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        document.addEventListener('alpine:init', () => {
+            Alpine.store('auth', localStorage.getItem('auth') || '');
+            Alpine.data('authForm', () => ({
+                username: '',
+                password: '',
+                async authenticate() {
+                    if (!this.username || !this.password) {
+                        console.error('Username and password are required');
+                        return;
+                    }
+
+                    try {
+                            Alpine.store('auth', btoa(this.username + ':' + this.password));
+                            const response = await request('/test/authenticate');
+
+                        if (response) {
+                            console.log('Authenticated successfully');
+                            localStorage.setItem('auth', Alpine.store('auth'));
+                        } else {
+                            console.error('Authentication failed');
+                            Alpine.store('auth', '');
+                            this.username = '';
+                            this.password = '';
+                        } 
+                    } catch (error) {
+                        console.error('Authentication error:', error);
+                        Alpine.store('auth', '');
+                        this.error = error.message || 'An unexpected error occurred. Please try again.';
+                    }
+                }
+            }));
+
+            Alpine.data('TestConfig', () => ({
+                campaign_id: 498,
+                phone: '',
+                statements: [],
+                iterations: 1,
+                lastResponse: [],
+                selectedConversation: 0,
+                isLoading: false,
+                error: null,
+                get isFormValid() {
+                    return this.campaign_id && 
+                           this.phone && 
+                           this.statements.length > 0 && 
+                           this.statements.some(s => s.text.trim() !== '');
+                },
+                getVisiblePages() {
+                    const total = this.lastResponse.length;
+                    const current = this.selectedConversation + 1;
+                    const maxVisible = 5;
+                    
+                    // If we have 5 or fewer pages, show all
+                    if (total <= maxVisible) {
+                        return Array.from({length: total}, (_, i) => i + 1);
+                    }
+                    
+                    let pages = [];
+                    
+                    if (current <= 3) {
+                        // Near the start: show 1,2,3,...,last
+                        pages = [1, 2, 3];
+                        if (total > 4) {
+                            pages.push(-1);
+                            pages.push(total);
+                        } else if (total === 4) {
+                            pages.push(4);
+                        }
+                    } else if (current >= total - 2) {
+                        // Near the end: show 1,...,last-2,last-1,last
+                        pages = [1, -1];
+                        for (let i = total - 2; i <= total; i++) {
+                            pages.push(i);
+                        }
+                    } else {
+                        // In the middle: show 1,...,current-1,current,current+1,...,last
+                        pages = [
+                            1,
+                            -1,
+                            current - 1,
+                            current,
+                            current + 1,
+                            -1,
+                            total
+                        ];
+                    }
+                    console.log(pages);
+                    return pages;
+                },
+                addStatement() {
+                    if (this.statements.length === 0 || this.statements[this.statements.length - 1].text.trim() !== '') {
+                        this.statements.push({text: ''});
+                        setTimeout(() => {
+                            const inputs = document.querySelectorAll('.statements-container input');
+                            const lastInput = inputs[inputs.length - 1];
+                            if (lastInput) lastInput.focus();
+                        }, 0);
+                    }
+                },
+                async submit() {
+                    try {
+                        document.querySelector('#results-tab').click();
+                        this.isLoading = true;
+                        this.error = null;
+                        const response = await request('/test', {
+                            campaign_id: this.campaign_id,
+                            phone: this.phone,
+                            iterations: this.iterations,
+                            statements: this.statements.map(x => x.text),
+                        });
+                        
+                        if (response) {
+                            this.lastResponse = response;
+                        } else {
+                            this.error = 'Failed to get response from server. Please try again.';
+                        }
+                    } catch (error) {
+                        console.error('Error during submission:', error);
+                        this.error = error.message || 'An unexpected error occurred. Please try again.';
+                    } finally {
+                        this.isLoading = false;
+                    }
+                }
+            }));
+        });
+
+        async function request(url, data = null) {
+            try {
+                const headers = {
+                    'Authorization': 'Basic ' + Alpine.store('auth'),
+                };
+
+                if (data) {
+                    headers['Content-Type'] = 'application/json';
+                }
+                
+                const response = await fetch(url, {
+                    method: data ? 'POST' : 'GET',
+                    headers,
+                    body: data ? JSON.stringify(data) : null,
+                });
+
+                if (!response.ok) {
+                    // Try to get error message from response
+                    let errorMessage = `Request failed with status ${response.status}`;
+                    try {
+                        const errorData = await response.json();
+                        if (errorData.message || errorData.error) {
+                            errorMessage = errorData.message || errorData.error;
+                        }
+                    } catch (e) {
+                        // If we can't parse the error response, stick with the default message
+                    }
+                    throw new Error(errorMessage);
+                }
+
+                if (response.headers.get("content-type")?.includes("application/json")) {
+                    return await response.json();
+                }
+
+                return true;
+            } catch (error) {
+                console.error('Request error:', error);
+                throw error; // Re-throw the error to be handled by the caller
+            }
+        }
+    </script>
+</html>

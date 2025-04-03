@@ -13,5 +13,6 @@ async function bootstrap() {
   const app = await NestFactory.create(AppModule);
   app.useWebSocketAdapter(new RespageWebSocketAdapter(app));
   await app.listen(process.env.PORT || 4200);
+  console.log("LISTING");
 }
 bootstrap();

@@ -16,13 +16,14 @@ import {customFormatter} from "./services/winston-log.service";
                   winston.format.json()
               )
           })
-      }),
+      })
   ],
   controllers: [
       AppController
   ],
   providers: [
-      AppService,
-  ],
+      AppService
+  ]
+  
 })
 export class AppModule {}

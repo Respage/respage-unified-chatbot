@@ -88,6 +88,15 @@ export class ActiveCall {
         return dateTime.isValid ? dateTime : null;
     }
 
+    initTesting(systemPromptData: { property: PropertyInfo, conversation: ConversationInfo }) {
+        this.updateSystemPrompt(systemPromptData.property, systemPromptData.conversation);
+        if (systemPromptData.property.tour_availability) {
+            this.conversation.functions = [SCHEDULE_TOUR_FUNCTION, LOOKUP_TOUR_TIMES_FUNCTION, TALK_TO_HUMAN_FUNCTION];
+        } else {
+            this.conversation.functions = [TALK_TO_HUMAN_FUNCTION];
+        }
+    }
+
     init(websocket: WebSocket,
          speechToText: Duplex, AI: Duplex,
          textToSpeech: Duplex,
