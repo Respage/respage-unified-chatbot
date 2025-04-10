@@ -132,7 +132,11 @@ export class Conversation {
         return this.systemPrompt;
     }
 
-    getCallHistory() {
+    getCallHistory(conversant?: 'user' | 'assistant') {
+        if (conversant) {
+            return this.conversationHistory.filter(x => x.role === conversant);
+        }
+
         return this.conversationHistory;
     }
 }
