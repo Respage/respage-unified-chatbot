@@ -359,8 +359,8 @@ export class ActiveCall {
         return this.conversation.getCallMessageWindow();
     }
 
-    getCallHistory() {
-        return this.conversation.getCallHistory();
+    getCallHistory(conversant?: 'user' | 'assistant') {
+        return this.conversation.getCallHistory(conversant);
     }
 
     setTourScheduled(scheduled: boolean) {
