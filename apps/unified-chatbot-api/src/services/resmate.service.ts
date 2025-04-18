@@ -362,4 +362,14 @@ export class ResmateService {
         this.logger.info("isDuringOfficeHours", {open, close});
         return +open < +time && +close > +time;
     }
+
+    async getTrackingNumberInfo(trackingNumber: string) {
+        const response = await axios({
+            url: `${process.env.RESMATE_API_URL}/private/tracking-numbers/${trackingNumber}`,
+            method: 'GET',
+            headers: this.headers
+        });
+
+        return response.data.data;
+    }
 }
