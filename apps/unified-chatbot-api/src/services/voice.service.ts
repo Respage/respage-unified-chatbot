@@ -124,11 +124,28 @@ export class VoiceService {
                     call.delayProspectSaving = true;
                     call.updateSystemPrompt(null, {prospect: {phone: from_number, campaign_id, timezone: info.timezone}});
                 } else {
+                    let attribution_type = 'voice';
+                    let attribution_value = 'voice';
+                    try {
+                        const answeredTrackingCallData = await this.redisService.getAnsweredTrackingCallData(conversation_id);
+
+                        if (answeredTrackingCallData) {
+                            const trackingNumberInfo = await this.resmateService.getTrackingNumberInfo(answeredTrackingCallData.trackingNumber);
+                            
+                            if (trackingNumberInfo?.utm?.utm_source) {
+                                attribution_type = 'external';
+                                attribution_value = trackingNumberInfo.utm.utm_source;
+                            }
+                        }
+                    } catch (e) {
+                        this.logger.error("VoiceService startCall failed to get answered tracking call data", {e});
+                    }
+
                     prospect = await this.resmateService.upsertProspect(campaign_id, {
                         campaign_id,
                         locale: 'en-US',
-                        attribution_type: 'voice',
-                        attribution_value: 'voice',
+                        attribution_type,
+                        attribution_value,
                         phone: from_number,
                         timezone: info.timezone
                     });

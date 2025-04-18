@@ -59,6 +59,17 @@ export class RedisService {
         return JSON.parse(await this.get(`${campaignId}${SYSTEM_PROMPT_DATA_KEY}`) as string);
     }
 
+    async getAnsweredTrackingCallData(conversationId: string) {
+        const data = await this.get(`tracking-phone-numbers_call_answered_${conversationId}`);
+        if (!data) return null;
+        try {
+            return JSON.parse(data as string);
+        } catch (err) {
+            this.logger.error('REDIS SERVICE getAnsweredTrackingCallData Error', { err });
+            return null;
+        }
+    }
+
     async getHash(hashKey: string) {
         try {
             return this._client.hGetAll(hashKey as any);
