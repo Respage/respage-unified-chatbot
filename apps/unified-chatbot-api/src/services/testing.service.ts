@@ -18,14 +18,14 @@ export class TestingService {
 
     async onModuleInit() {}
 
-    async generateConversation(campaignId: number, statements: string[], iterations: number = 1, phone: string = '5555555555') {
+    async generateConversation(campaignId: number, statements: string[], iterations: number = 1, to_number: string = '5555555554', phone: string = '5555555555') {
         const info = await this.redisService.getSystemPromptData(campaignId);
         info.timezone = info.tour_availability.timezone;        
         const offerTours = !!info.tour_availability.in_person_tours_enabled;
 
         const results = [];
         for (let i = 0; i < iterations; i++) {
-            const call = new ActiveCall(null, null, campaignId, info.tour_availability.timezone, offerTours);
+            const call = new ActiveCall(null, null, to_number, campaignId, info.tour_availability.timezone, offerTours);
                 
             call.initTesting(
                 {
@@ -78,10 +78,9 @@ export class TestingService {
                 prospect = await this.resmateService.upsertProspect(campaignId, {
                     campaign_id: campaignId,
                     locale: 'en-US',
-                    attribution_type: 'voice',
-                    attribution_value: 'voice',
                     phone: phone,
-                    timezone: info.timezone
+                    timezone: info.timezone,
+                    ...(await this.resmateService.getAttributionInfo(to_number)),
                 });
         
                 call.updateSystemPrompt(null, {prospect: {_id: prospect._id, phone: prospect.phone, campaign_id: campaignId}});
