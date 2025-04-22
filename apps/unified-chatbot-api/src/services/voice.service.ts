@@ -127,8 +127,8 @@ export class VoiceService {
                     let attribution_type = 'voice';
                     let attribution_value = 'voice';
                     try {
-                        const answeredTrackingCallData = await this.redisService.getAnsweredTrackingCallData(conversation_id);
-                        this.logger.info("answeredTrackingCallData", {conversation_id, answeredTrackingCallData});
+                        const answeredTrackingCallData = await this.redisService.getAnsweredTrackingCallData(to_number);
+                        this.logger.info("answeredTrackingCallData", {to_number, answeredTrackingCallData});
                         if (answeredTrackingCallData) {
                             const trackingNumberInfo = await this.resmateService.getTrackingNumberInfo(answeredTrackingCallData.trackingNumber);
                             this.logger.info("trackingNumberInfo", {trackingNumberInfo});
