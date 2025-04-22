@@ -59,8 +59,8 @@ export class RedisService {
         return JSON.parse(await this.get(`${campaignId}${SYSTEM_PROMPT_DATA_KEY}`) as string);
     }
 
-    async getAnsweredTrackingCallData(conversationId: string) {
-        const data = await this.get(`tracking-phone-numbers_call_answered_${conversationId}`);
+    async getAnsweredTrackingCallData(to_number: string) {
+        const data = await this.get(`tracking-phone-numbers_call_answered_${to_number}`);
         if (!data) return null;
         try {
             return JSON.parse(data as string);
