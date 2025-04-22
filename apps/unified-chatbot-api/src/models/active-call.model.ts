@@ -29,7 +29,7 @@ enum ActiveCallStreamState {
 export class ActiveCall {
     readonly id: string;
     readonly conversation_id: string;
-
+    readonly to_number: string;
     private callSocket: WebSocket;
     private readonly onCloseCallbacks: Array<() => void>
     private aIStream: Duplex;
@@ -58,14 +58,14 @@ export class ActiveCall {
     private maximumVolume;
     private weightedAvgVolume;
 
-    constructor(id: string, conversation_id: string, campaign_id: number, timezone: string, offerTours: boolean = true, callMemorySize = 20) {
+    constructor(id: string, conversation_id: string, to_number: string, campaign_id: number, timezone: string, offerTours: boolean = true, callMemorySize = 20) {
         this.minimumVolume = -1;
         this.maximumVolume = SIGNED_INT_MAX; // maximum absolute value of a signed 16 bit integer
         this.weightedAvgVolume = (this.maximumVolume / 2) + AVG_WEIGHT;
 
         this.id = id;
         this.conversation_id = conversation_id;
-
+        this.to_number = to_number;
         this.onCloseCallbacks = [];
 
         this.conversation = new Conversation(campaign_id, 'voice', timezone, callMemorySize, offerTours);

@@ -59,7 +59,7 @@ export class VoiceService {
 
         const offerTours = !!info.tour_availability.in_person_tours_enabled;
 
-        const call = new ActiveCall(call_id, conversation_id, campaign_id, info.tour_availability.timezone, offerTours);
+        const call = new ActiveCall(call_id, conversation_id, to_number, campaign_id, info.tour_availability.timezone, offerTours);
         this.logger.info("SYSTEM PROMPT", {prompt: call.conversation.getSystemPrompt()});
         this.activeCalls[conversation_id] = call;
 
@@ -124,31 +124,13 @@ export class VoiceService {
                     call.delayProspectSaving = true;
                     call.updateSystemPrompt(null, {prospect: {phone: from_number, campaign_id, timezone: info.timezone}});
                 } else {
-                    let attribution_type = 'voice';
-                    let attribution_value = 'voice';
-                    try {
-                        const answeredTrackingCallData = await this.redisService.getAnsweredTrackingCallData(to_number);
-                        this.logger.info("answeredTrackingCallData", {to_number, answeredTrackingCallData});
-                        if (answeredTrackingCallData) {
-                            const trackingNumberInfo = await this.resmateService.getTrackingNumberInfo(answeredTrackingCallData.trackingNumber);
-                            this.logger.info("trackingNumberInfo", {trackingNumberInfo});
-                            if (trackingNumberInfo?.utm?.source) {
-                                this.logger.info(`trackingNumberInfo.utm.source: ${trackingNumberInfo.utm.source}`);
-                                attribution_type = 'external';
-                                attribution_value = trackingNumberInfo.utm.source;
-                            }
-                        }
-                    } catch (e) {
-                        this.logger.error("VoiceService startCall failed to get answered tracking call data", {e});
-                    }
 
                     prospect = await this.resmateService.upsertProspect(campaign_id, {
                         campaign_id,
                         locale: 'en-US',
-                        attribution_type,
-                        attribution_value,
                         phone: from_number,
-                        timezone: info.timezone
+                        timezone: info.timezone,
+                        ...(await this.resmateService.getAttributionInfo(to_number)),
                     });
 
                     const {_id, phone} = prospect;
@@ -199,9 +181,8 @@ export class VoiceService {
                     ...user_info,
                     interests,
                     locale: 'en-US',
-                    attribution_type: 'voice',
-                    attribution_value: 'voice',
-                    await_external_integration_ids: true
+                    await_external_integration_ids: true,
+                    ...(await this.resmateService.getAttributionInfo(to_number)),
                 };
 
                 if (user_info.sms_consent && !call.getSMSConsent()) {

@@ -34,10 +34,10 @@ export class AppController {
 
   @Post('/test')
   @UseGuards(TestApiAuthGuard)
-  async testApi(@Res() res: Response, @Body() body: { campaign_id: number, statements: string[], phone: string, iterations: number }) {
+  async testApi(@Res() res: Response, @Body() body: { campaign_id: number, statements: string[], phone: string, iterations: number, to_number: string }) {
     try {
       console.log(body);
-      const response = await this.testingService.generateConversation(body.campaign_id, body.statements, body.iterations, body.phone)
+      const response = await this.testingService.generateConversation(body.campaign_id, body.statements, body.iterations, body.to_number, body.phone)
       res.status(200).send(response);
     } catch (e) {
       this.logger.error("Error in testApi", {error: e});
