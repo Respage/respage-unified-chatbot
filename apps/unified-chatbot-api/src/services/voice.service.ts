@@ -128,10 +128,10 @@ export class VoiceService {
                     let attribution_value = 'voice';
                     try {
                         const answeredTrackingCallData = await this.redisService.getAnsweredTrackingCallData(conversation_id);
-
+                        this.logger.info("answeredTrackingCallData", {conversation_id, answeredTrackingCallData});
                         if (answeredTrackingCallData) {
                             const trackingNumberInfo = await this.resmateService.getTrackingNumberInfo(answeredTrackingCallData.trackingNumber);
-                            
+                            this.logger.info("trackingNumberInfo", {trackingNumberInfo});
                             if (trackingNumberInfo?.utm?.utm_source) {
                                 attribution_type = 'external';
                                 attribution_value = trackingNumberInfo.utm.utm_source;
