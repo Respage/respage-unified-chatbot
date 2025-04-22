@@ -133,6 +133,7 @@ export class VoiceService {
                             const trackingNumberInfo = await this.resmateService.getTrackingNumberInfo(answeredTrackingCallData.trackingNumber);
                             this.logger.info("trackingNumberInfo", {trackingNumberInfo});
                             if (trackingNumberInfo?.utm?.source) {
+                                this.logger.info(`trackingNumberInfo.utm.source: ${trackingNumberInfo.utm.source}`);
                                 attribution_type = 'external';
                                 attribution_value = trackingNumberInfo.utm.source;
                             }
