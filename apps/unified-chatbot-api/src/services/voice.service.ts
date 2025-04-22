@@ -132,9 +132,9 @@ export class VoiceService {
                         if (answeredTrackingCallData) {
                             const trackingNumberInfo = await this.resmateService.getTrackingNumberInfo(answeredTrackingCallData.trackingNumber);
                             this.logger.info("trackingNumberInfo", {trackingNumberInfo});
-                            if (trackingNumberInfo?.utm?.utm_source) {
+                            if (trackingNumberInfo?.utm?.source) {
                                 attribution_type = 'external';
-                                attribution_value = trackingNumberInfo.utm.utm_source;
+                                attribution_value = trackingNumberInfo.utm.source;
                             }
                         }
                     } catch (e) {
