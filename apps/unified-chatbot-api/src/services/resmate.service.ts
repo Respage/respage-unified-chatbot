@@ -117,7 +117,6 @@ export class ResmateService {
     }
 
     constructor(
-        @Inject(forwardRef(() => ResmateService)) private resmateService: ResmateService,
         @Inject(forwardRef(() => RedisService)) private redisService: RedisService,
         @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
     ) {
@@ -189,7 +188,7 @@ export class ResmateService {
             const upsert = {
                 ...call.conversation.conversationInfo.prospect,
                 locale: 'en-US',
-                ...(await this.resmateService.getAttributionInfo(call.to_number)),
+                ...(await this.getAttributionInfo(call.to_number)),
                 await_external_integration_ids: true,
                 ...additionalUpsert
             };
