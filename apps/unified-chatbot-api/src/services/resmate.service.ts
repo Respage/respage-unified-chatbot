@@ -6,6 +6,7 @@ import {ChatHistoryLog, ConversationInfo} from "../models/conversation.model";
 import {ActiveCall} from "../models/active-call.model";
 import {WINSTON_MODULE_PROVIDER} from "nest-winston";
 import {OpenAiService} from "./open-ai.service";
+import { RedisService } from "./redis.service";
 
 export interface UpsertProspectParams {
     _id: string,
@@ -115,7 +116,10 @@ export class ResmateService {
         return mapped;
     }
 
-    constructor(@Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger) {
+    constructor(
+        @Inject(forwardRef(() => RedisService)) private redisService: RedisService,
+        @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
+    ) {
         this.headers = {
             Authorization: `Basic ${Buffer.from(process.env.RESMATE_AUTH_USERNAME + ':' + process.env.RESMATE_AUTH_KEY).toString('base64')}`
         };
@@ -184,8 +188,7 @@ export class ResmateService {
             const upsert = {
                 ...call.conversation.conversationInfo.prospect,
                 locale: 'en-US',
-                attribution_type: 'voice',
-                attribution_value: 'voice',
+                ...(await this.getAttributionInfo(call.to_number)),
                 await_external_integration_ids: true,
                 ...additionalUpsert
             };
@@ -361,5 +364,39 @@ export class ResmateService {
         }
         this.logger.info("isDuringOfficeHours", {open, close});
         return +open < +time && +close > +time;
+    }
+
+    async getTrackingNumberInfo(trackingNumber: string) {
+        const response = await axios({
+            url: `${process.env.RESMATE_API_URL}/private/tracking-numbers/${trackingNumber}`,
+            method: 'GET',
+            headers: this.headers
+        });
+
+        return response.data.data;
+    }
+
+    async getAttributionInfo(to_number: string) {
+        let attribution_type = 'voice';
+        let attribution_value = 'voice';
+        let utm;
+        try {
+            const answeredTrackingCallData = await this.redisService.getAnsweredTrackingCallData(to_number);
+            this.logger.info("answeredTrackingCallData", {to_number, answeredTrackingCallData});
+            if (answeredTrackingCallData) {
+                const trackingNumberInfo = await this.getTrackingNumberInfo(answeredTrackingCallData.trackingNumber);
+                this.logger.info("trackingNumberInfo", {trackingNumberInfo});
+                if (trackingNumberInfo?.utm?.source) {
+                    this.logger.info(`trackingNumberInfo.utm.source: ${trackingNumberInfo.utm.source}`);
+                    attribution_type = 'external';
+                    attribution_value = trackingNumberInfo.utm.source;
+                    utm = trackingNumberInfo.utm;
+                }
+            }
+        } catch (e) {
+            this.logger.error("VoiceService startCall failed to get answered tracking call data", {e});
+        }
+
+        return {attribution_type, attribution_value, utm};
     }
 }
