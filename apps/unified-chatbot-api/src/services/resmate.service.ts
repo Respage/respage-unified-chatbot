@@ -386,11 +386,23 @@ export class ResmateService {
             if (answeredTrackingCallData) {
                 const trackingNumberInfo = await this.getTrackingNumberInfo(answeredTrackingCallData.trackingNumber);
                 this.logger.info("trackingNumberInfo", {trackingNumberInfo});
-                if (trackingNumberInfo?.utm?.source) {
+                
+                let utm;
+                if (trackingNumberInfo?.utm) {
+                    // We have to convert utm settings to match attribution_source utm properties
+                    utm = Object.entries(trackingNumberInfo.utm).reduce((acc, [key, value]) => {
+                        if (!key.startsWith('utm_')) {
+                            acc[`utm_${key}`] = value;
+                        } else {
+                            acc[key] = value;
+                        }
+                        return acc;
+                    }, {});
+                }
+                if (utm?.utm_source) {
                     this.logger.info(`trackingNumberInfo.utm.source: ${trackingNumberInfo.utm.source}`);
                     attribution_type = 'external';
-                    attribution_value = trackingNumberInfo.utm.source;
-                    utm = trackingNumberInfo.utm;
+                    attribution_value = utm.utm_source;
                 }
             }
         } catch (e) {
