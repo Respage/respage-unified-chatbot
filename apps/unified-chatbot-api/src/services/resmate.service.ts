@@ -402,8 +402,7 @@ export class ResmateService {
                 if (utm?.utm_source) {
                     this.logger.info('converted utm', {utm});
                     attribution_type = 'external';
-                    attribution_value = trackingNumberInfo.utm.source;
-                    utm = trackingNumberInfo.utm;
+                    attribution_value = utm.utm_source;
                 }
             }
         } catch (e) {
