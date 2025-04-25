@@ -208,7 +208,6 @@ export class ResmateService {
     }
 
     async upsertProspect(campaign_id: number, data: Partial<UpsertProspectParams>) {
-        this.logger.info('upsertProspect', {data});
         const response = await axios({
             method: "POST",
             url: `${process.env.RESMATE_API_URL}/prospect/${campaign_id}/upsert`,
@@ -380,15 +379,13 @@ export class ResmateService {
     async getAttributionInfo(to_number: string) {
         let attribution_type = 'voice';
         let attribution_value = 'voice';
-        let utm;
+        let utm: any;
         try {
             const answeredTrackingCallData = await this.redisService.getAnsweredTrackingCallData(to_number);
             this.logger.info("answeredTrackingCallData", {to_number, answeredTrackingCallData});
             if (answeredTrackingCallData) {
                 const trackingNumberInfo = await this.getTrackingNumberInfo(answeredTrackingCallData.trackingNumber);
                 this.logger.info("trackingNumberInfo", {trackingNumberInfo});
-                
-                let utm;
                 if (trackingNumberInfo?.utm) {
                     // We have to convert utm settings to match attribution_source utm properties
                     utm = Object.entries(trackingNumberInfo.utm).reduce((acc, [key, value]) => {
