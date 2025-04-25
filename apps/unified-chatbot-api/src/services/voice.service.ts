@@ -124,7 +124,6 @@ export class VoiceService {
                     call.delayProspectSaving = true;
                     call.updateSystemPrompt(null, {prospect: {phone: from_number, campaign_id, timezone: info.timezone}});
                 } else {
-                    this.logger.info('upsertProspect START OF CONVO', {campaign_id, from_number});
                     const attributionInfo = await this.resmateService.getAttributionInfo(to_number);
                     prospect = await this.resmateService.upsertProspect(campaign_id, {
                         campaign_id,
