@@ -400,7 +400,7 @@ export class ResmateService {
                     }, {});
                 }
                 if (utm?.utm_source) {
-                    this.logger.info(`trackingNumberInfo.utm.source: ${trackingNumberInfo.utm.source}`);
+                    this.logger.info('converted utm', {utm});
                     attribution_type = 'external';
                     attribution_value = utm.utm_source;
                 }
