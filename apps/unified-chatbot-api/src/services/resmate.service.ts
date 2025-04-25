@@ -208,6 +208,7 @@ export class ResmateService {
     }
 
     async upsertProspect(campaign_id: number, data: Partial<UpsertProspectParams>) {
+        this.logger.info('upsertProspect', {data});
         const response = await axios({
             method: "POST",
             url: `${process.env.RESMATE_API_URL}/prospect/${campaign_id}/upsert`,
