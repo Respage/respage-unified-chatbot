@@ -124,13 +124,13 @@ export class VoiceService {
                     call.delayProspectSaving = true;
                     call.updateSystemPrompt(null, {prospect: {phone: from_number, campaign_id, timezone: info.timezone}});
                 } else {
-
+                    const attributionInfo = await this.resmateService.getAttributionInfo(to_number);
                     prospect = await this.resmateService.upsertProspect(campaign_id, {
                         campaign_id,
                         locale: 'en-US',
                         phone: from_number,
                         timezone: info.timezone,
-                        ...(await this.resmateService.getAttributionInfo(to_number)),
+                        ...attributionInfo,
                     });
 
                     const {_id, phone} = prospect;

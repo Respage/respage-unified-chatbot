@@ -379,15 +379,13 @@ export class ResmateService {
     async getAttributionInfo(to_number: string) {
         let attribution_type = 'voice';
         let attribution_value = 'voice';
-        let utm;
+        let utm: any;
         try {
             const answeredTrackingCallData = await this.redisService.getAnsweredTrackingCallData(to_number);
             this.logger.info("answeredTrackingCallData", {to_number, answeredTrackingCallData});
             if (answeredTrackingCallData) {
                 const trackingNumberInfo = await this.getTrackingNumberInfo(answeredTrackingCallData.trackingNumber);
                 this.logger.info("trackingNumberInfo", {trackingNumberInfo});
-                
-                let utm;
                 if (trackingNumberInfo?.utm) {
                     // We have to convert utm settings to match attribution_source utm properties
                     utm = Object.entries(trackingNumberInfo.utm).reduce((acc, [key, value]) => {
@@ -400,7 +398,7 @@ export class ResmateService {
                     }, {});
                 }
                 if (utm?.utm_source) {
-                    this.logger.info(`trackingNumberInfo.utm.source: ${trackingNumberInfo.utm.source}`);
+                    this.logger.info('converted utm', {utm});
                     attribution_type = 'external';
                     attribution_value = utm.utm_source;
                 }
